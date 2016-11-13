@@ -1,6 +1,6 @@
 # MMD Parser
 
-mmd-parser parses ArrayBuffer/Strings and generates Object.
+mmd-parser parses MMD ArrayBuffer/Strings and generates Object.
 
 
 ## Browser
