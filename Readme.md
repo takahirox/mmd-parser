@@ -78,7 +78,7 @@ $ npm run all
 
 ### How to load
 ```
-require(mmd-parser);
+require('mmd-parser');
 ```
 
 
