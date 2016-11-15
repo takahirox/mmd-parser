@@ -11521,4 +11521,4 @@ Parser.prototype.leftToRightVpd = function ( vpd ) {
 
 };
 
-export { Parser };
+export { CharsetEncoder, Parser };

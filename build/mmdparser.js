@@ -11527,6 +11527,7 @@ Parser.prototype.leftToRightVpd = function ( vpd ) {
 
 };
 
+exports.CharsetEncoder = CharsetEncoder;
 exports.Parser = Parser;
 
 Object.defineProperty(exports, '__esModule', { value: true });
