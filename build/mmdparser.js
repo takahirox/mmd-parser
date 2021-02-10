@@ -17,27 +17,32 @@ function CharsetEncoder() {
  * Converts from Shift_JIS Uint8Array data to Unicode strings.
  */
 CharsetEncoder.prototype.s2u = function(uint8Array) {
-  var t = this.s2uTable;
-  var str = '';
-  var p = 0;
+	return new TextDecoder('shift-jis').decode(uint8Array);
 
-  while(p < uint8Array.length) {
-    var key = uint8Array[p++];
+	//======================= doesn't work well ============================
+	//   var t = this.s2uTable;
+	//   var str = '';
+	//   var p = 0;
 
-    if(! ((key >= 0x00 && key <= 0x7e) ||
-          (key >= 0xa1 && key <= 0xdf)) &&
-       p < uint8Array.length) {
-      key = (key << 8) | uint8Array[p++];
-    }
+	//   while(p < uint8Array.length) {
+	//     var key = uint8Array[p++];
 
-    if(t[key] === undefined) {
-      throw 'unknown char code ' + key + '.';
-    }
+	//     if(! ((key >= 0x00 && key <= 0x7e) ||
+	//           (key >= 0xa1 && key <= 0xdf)) &&
+	//        p < uint8Array.length) {
+	//       key = (key << 8) | uint8Array[p++];
+	//     }
 
-    str += String.fromCharCode(t[key]);
-  }
+	//     if(t[key] === undefined) {
+	//       throw 'unknown char code ' + key + '.';
+	//     }
 
-  return str;
+	//     str += String.fromCharCode(t[key]);
+	//   }
+
+	//   return str;
+	
+	// ===============================================================
 };
 
 CharsetEncoder.prototype.s2uTable = {
