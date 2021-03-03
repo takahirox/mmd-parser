@@ -31,7 +31,8 @@ CharsetEncoder.prototype.s2u = function(uint8Array) {
     }
 
     if(t[key] === undefined) {
-      throw 'unknown char code ' + key + '.';
+      console.error('unknown char code ' + key + '.');
+      return str;
     }
 
     str += String.fromCharCode(t[key]);
@@ -11527,6 +11528,12 @@ Parser.prototype.leftToRightVpd = function ( vpd ) {
 
 };
 
+var MMDParser = {
+  CharsetEncoder: CharsetEncoder,
+  Parser: Parser
+};
+
+exports.MMDParser = MMDParser;
 exports.CharsetEncoder = CharsetEncoder;
 exports.Parser = Parser;
 
