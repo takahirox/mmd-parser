@@ -22,7 +22,7 @@
   },
   "homepage": "https://github.com/takahirox/mmd-parser#readme",
   "devDependencies": {
-    "charset-encoder-js": "^1.0.0",
+    "charset-encoder-js": "^1.0.1",
     "rollup": "^0.36.3",
     "rollup-plugin-node-resolve": "^2.0.0",
     "rollup-plugin-commonjs": "^5.0.5",
