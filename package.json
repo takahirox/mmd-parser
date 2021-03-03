@@ -1,6 +1,6 @@
 {
   "name": "mmd-parser",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "MMD parser",
   "main": "build/mmdparser.js",
   "jsnext:main": "build/mmdparser.module.js",
