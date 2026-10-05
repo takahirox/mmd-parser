@@ -2,6 +2,12 @@
 
 mmd-parser parses MMD ArrayBuffer/Strings and generates Object.
 
+## Contributing
+
+See the [development flow](docs/development-flow.md) for Issue authoring, build and
+test commands, and PR preparation, and the [review guidelines](docs/review-guidelines.md)
+for review, merge, and Issue closure guidance for contributors and AI agents.
+
 
 ## Browser
 
