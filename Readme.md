@@ -89,13 +89,14 @@ $ npm run test:offline
 The maintained source is `index.ts` and `src/*.ts`. TypeScript runs with
 `strict` and `noUncheckedIndexedAccess`; `npm run typecheck` checks the source
 and compile-only public type contracts. `npm run build` compiles to an ignored
-`.typescript-tmp/compiled/` directory, bundles the UMD and ES module outputs, and
-writes declarations to `build/types/`. `build-uglify` also regenerates the
-minified browser bundle. `npm run dev` watches TypeScript and rebuilds the bundles
-and declarations after each successful compilation.
+`.typescript-tmp/compiled/` directory, bundles the UMD, browser ES module, and
+native Node ESM outputs, and writes declarations to `build/types/`.
+`build-uglify` also regenerates the minified browser bundle. `npm run dev` watches
+TypeScript and rebuilds the bundles and declarations after each successful
+compilation.
 
 The offline tests use small synthetic PMD, PMX, VMD, and VPD fixtures with
-assertions against all three rebuilt bundles and a browser global smoke check.
+assertions against all four rebuilt bundles and a browser global smoke check.
 They cover the parser's currently supported sections; they do not establish
 support for additional PMX features. `npm test` retains the original sample
 smoke script, which downloads real PMD, VMD, and VPD samples from
@@ -106,21 +107,46 @@ It requires network access and does not exercise PMX. `npm run all` runs the
 build, type checks, offline tests, and this sample script in sequence.
 
 After building, `npm run test:package` packs and inspects the npm artifact, installs
-it in a temporary consumer outside the repository, and checks CommonJS runtime
-exports and strict TypeScript imports from `mmd-parser`. Only runtime bundles,
+it in a temporary consumer outside the repository, and checks CommonJS and native
+Node ESM runtime exports and strict TypeScript imports from `mmd-parser` with
+`node`, `node16`, `nodenext`, and `bundler` resolution. Only runtime bundles,
 declarations, package metadata, the README, and the license are distributed.
 
 ### How to load
+
+ES modules (including native Node ESM):
+
+```js
+import { MMDParser, Parser, CharsetEncoder } from 'mmd-parser';
+
+const parser = new Parser(); // also new MMDParser.Parser()
 ```
-require('mmd-parser');
+
+CommonJS:
+
+```js
+const { MMDParser, Parser, CharsetEncoder } = require('mmd-parser');
+
+const parser = new Parser();
 ```
+
+The package's conditional `exports` select the native `.mjs` bundle for imports
+and the UMD/CommonJS bundle for `require()`. Package-root imports do not require
+an internal `build/` path or the legacy `jsnext:main` field. The existing `main`
+and `jsnext:main` entries remain for older tools.
+
+For direct browser loading, `build/mmdparser.js` and `build/mmdparser.min.js`
+remain UMD script bundles, and `build/mmdparser.module.js` remains an ES module
+bundle for `<script type="module">`. These bundle subpaths remain exported for
+tools that resolve them through the package.
 
 
 ### TypeScript
 
 The existing exports and runtime methods are unchanged. Declarations are resolved
-through the package's `types` entry; parser results and nested records can be
-imported as types:
+through conditional `types` exports for ESM and CommonJS, with the top-level
+`types` entry retained for older TypeScript resolution. Parser results and nested
+records can be imported as types:
 
 ```ts
 import { MMDParser, Parser, CharsetEncoder } from 'mmd-parser';

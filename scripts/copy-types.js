@@ -11,6 +11,8 @@ function copyDeclarations(source, destination) {
   });
 }
 copyDeclarations('.typescript-tmp/compiled', 'build/types');
+// Give the native ESM entry an ESM declaration while sharing the public types.
+fs.writeFileSync('build/types/index.d.mts', 'export * from "./index.js";\n');
 fs.copyFileSync('src/charset-encoder-js.d.ts', 'build/types/src/charset-encoder-js.d.ts');
 // Make the local dependency declaration available to package consumers.
 fs.writeFileSync('build/types/src/CharsetEncoder.d.ts',
