@@ -2,50 +2,47 @@
  * @author takahiro / https://github.com/takahirox
  */
 
-function DataCreationHelper () {
-};
+import type { Vector3, Quaternion } from './Types';
 
-DataCreationHelper.prototype = {
+class DataCreationHelper {
 
-	constructor: DataCreationHelper,
-
-	leftToRightVector3: function ( v ) {
+	leftToRightVector3 ( v: Vector3 ) {
 
 		v[ 2 ] = -v[ 2 ];
 
-	},
+	}
 
-	leftToRightQuaternion: function ( q ) {
+	leftToRightQuaternion ( q: Quaternion ) {
 
 		q[ 0 ] = -q[ 0 ];
 		q[ 1 ] = -q[ 1 ];
 
-	},
+	}
 
-	leftToRightEuler: function ( r ) {
+	leftToRightEuler ( r: Vector3 ) {
 
 		r[ 0 ] = -r[ 0 ];
 		r[ 1 ] = -r[ 1 ];
 
-	},
+	}
 
-	leftToRightIndexOrder: function ( p ) {
+	leftToRightIndexOrder ( p: Vector3 ) {
 
 		var tmp = p[ 2 ];
 		p[ 2 ] = p[ 0 ];
 		p[ 0 ] = tmp;
 
-	},
+	}
 
-	leftToRightVector3Range: function ( v1, v2 ) {
+	leftToRightVector3Range ( v1: Vector3, v2: Vector3 ) {
 
 		var tmp = -v2[ 2 ];
 		v2[ 2 ] = -v1[ 2 ];
 		v1[ 2 ] = tmp;
 
-	},
+	}
 
-	leftToRightEulerRange: function ( r1, r2 ) {
+	leftToRightEulerRange ( r1: Vector3, r2: Vector3 ) {
 
 		var tmp1 = -r2[ 0 ];
 		var tmp2 = -r2[ 1 ];
@@ -56,6 +53,6 @@ DataCreationHelper.prototype = {
 
 	}
 
-};
+}
 
 export { DataCreationHelper }

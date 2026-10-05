@@ -9647,1884 +9647,820 @@ CharsetEncoder.prototype.s2uTable = {
 /**
  * @author takahiro / https://github.com/takahirox
  */
-
-function DataViewEx ( buffer, littleEndian ) {
-
-	this.dv = new DataView( buffer );
-	this.offset = 0;
-	this.littleEndian = ( littleEndian !== undefined ) ? littleEndian : true;
-	this.encoder = new CharsetEncoder();
-
-}
-
-DataViewEx.prototype = {
-
-	constructor: DataViewEx,
-
-	getInt8: function () {
-
-		var value = this.dv.getInt8( this.offset );
-		this.offset += 1;
-		return value;
-
-	},
-
-	getInt8Array: function ( size ) {
-
-		var a = [];
-
-		for ( var i = 0; i < size; i++ ) {
-
-			a.push( this.getInt8() );
-
-		}
-
-		return a;
-
-	},
-
-	getUint8: function () {
-
-		var value = this.dv.getUint8( this.offset );
-		this.offset += 1;
-		return value;
-
-	},
-
-	getUint8Array: function ( size ) {
-
-		var a = [];
-
-		for ( var i = 0; i < size; i++ ) {
-
-			a.push( this.getUint8() );
-
-		}
-
-		return a;
-
-	},
-
-
-	getInt16: function () {
-
-		var value = this.dv.getInt16( this.offset, this.littleEndian );
-		this.offset += 2;
-		return value;
-
-	},
-
-	getInt16Array: function ( size ) {
-
-		var a = [];
-
-		for ( var i = 0; i < size; i++ ) {
-
-			a.push( this.getInt16() );
-
-		}
-
-		return a;
-
-	},
-
-	getUint16: function () {
-
-		var value = this.dv.getUint16( this.offset, this.littleEndian );
-		this.offset += 2;
-		return value;
-
-	},
-
-	getUint16Array: function ( size ) {
-
-		var a = [];
-
-		for ( var i = 0; i < size; i++ ) {
-
-			a.push( this.getUint16() );
-
-		}
-
-		return a;
-
-	},
-
-	getInt32: function () {
-
-		var value = this.dv.getInt32( this.offset, this.littleEndian );
-		this.offset += 4;
-		return value;
-
-	},
-
-	getInt32Array: function ( size ) {
-
-		var a = [];
-
-		for ( var i = 0; i < size; i++ ) {
-
-			a.push( this.getInt32() );
-
-		}
-
-		return a;
-
-	},
-
-	getUint32: function () {
-
-		var value = this.dv.getUint32( this.offset, this.littleEndian );
-		this.offset += 4;
-		return value;
-
-	},
-
-	getUint32Array: function ( size ) {
-
-		var a = [];
-
-		for ( var i = 0; i < size; i++ ) {
-
-			a.push( this.getUint32() );
-
-		}
-
-		return a;
-
-	},
-
-	getFloat32: function () {
-
-		var value = this.dv.getFloat32( this.offset, this.littleEndian );
-		this.offset += 4;
-		return value;
-
-	},
-
-	getFloat32Array: function( size ) {
-
-		var a = [];
-
-		for ( var i = 0; i < size; i++ ) {
-
-			a.push( this.getFloat32() );
-
-		}
-
-		return a;
-
-	},
-
-	getFloat64: function () {
-
-		var value = this.dv.getFloat64( this.offset, this.littleEndian );
-		this.offset += 8;
-		return value;
-
-	},
-
-	getFloat64Array: function( size ) {
-
-		var a = [];
-
-		for ( var i = 0; i < size; i++ ) {
-
-			a.push( this.getFloat64() );
-
-		}
-
-		return a;
-
-	},
-
-	getIndex: function ( type, isUnsigned ) {
-
-		switch ( type ) {
-
-			case 1:
-				return ( isUnsigned === true ) ? this.getUint8() : this.getInt8();
-
-			case 2:
-				return ( isUnsigned === true ) ? this.getUint16() : this.getInt16();
-
-			case 4:
-				return this.getInt32(); // No Uint32
-
-			default:
-				throw 'unknown number type ' + type + ' exception.';
-
-		}
-
-	},
-
-	getIndexArray: function ( type, size, isUnsigned ) {
-
-		var a = [];
-
-		for ( var i = 0; i < size; i++ ) {
-
-			a.push( this.getIndex( type, isUnsigned ) );
-
-		}
-
-		return a;
-
-	},
-
-	getChars: function ( size ) {
-
-		var str = '';
-
-		while ( size > 0 ) {
-
-			var value = this.getUint8();
-			size--;
-
-			if ( value === 0 ) {
-
-				break;
-
-			}
-
-			str += String.fromCharCode( value );
-
-		}
-
-		while ( size > 0 ) {
-
-			this.getUint8();
-			size--;
-
-		}
-
-		return str;
-
-	},
-
-	getSjisStringsAsUnicode: function ( size ) {
-
-		var a = [];
-
-		while ( size > 0 ) {
-
-			var value = this.getUint8();
-			size--;
-
-			if ( value === 0 ) {
-
-				break;
-
-			}
-
-			a.push( value );
-
-		}
-
-		while ( size > 0 ) {
-
-			this.getUint8();
-			size--;
-
-		}
-
-		return this.encoder.s2u( new Uint8Array( a ) );
-
-	},
-
-	getUnicodeStrings: function ( size ) {
-
-		var str = '';
-
-		while ( size > 0 ) {
-
-			var value = this.getUint16();
-			size -= 2;
-
-			if ( value === 0 ) {
-
-				break;
-
-			}
-
-			str += String.fromCharCode( value );
-
-		}
-
-		while ( size > 0 ) {
-
-			this.getUint8();
-			size--;
-
-		}
-
-		return str;
-
-	},
-
-	getTextBuffer: function () {
-
-		var size = this.getUint32();
-		return this.getUnicodeStrings( size );
-
-	}
-
-};
+var DataViewEx = /** @class */ (function () {
+    function DataViewEx(buffer, littleEndian) {
+        if (littleEndian === void 0) { littleEndian = true; }
+        this.dv = new DataView(buffer);
+        this.offset = 0;
+        this.littleEndian = littleEndian;
+        this.encoder = new CharsetEncoder();
+    }
+    DataViewEx.prototype.getInt8 = function () {
+        var value = this.dv.getInt8(this.offset);
+        this.offset += 1;
+        return value;
+    };
+    DataViewEx.prototype.getInt8Array = function (size) {
+        var a = [];
+        for (var i = 0; i < size; i++) {
+            a.push(this.getInt8());
+        }
+        return a;
+    };
+    DataViewEx.prototype.getUint8 = function () {
+        var value = this.dv.getUint8(this.offset);
+        this.offset += 1;
+        return value;
+    };
+    DataViewEx.prototype.getUint8Array = function (size) {
+        var a = [];
+        for (var i = 0; i < size; i++) {
+            a.push(this.getUint8());
+        }
+        return a;
+    };
+    DataViewEx.prototype.getInt16 = function () {
+        var value = this.dv.getInt16(this.offset, this.littleEndian);
+        this.offset += 2;
+        return value;
+    };
+    DataViewEx.prototype.getInt16Array = function (size) {
+        var a = [];
+        for (var i = 0; i < size; i++) {
+            a.push(this.getInt16());
+        }
+        return a;
+    };
+    DataViewEx.prototype.getUint16 = function () {
+        var value = this.dv.getUint16(this.offset, this.littleEndian);
+        this.offset += 2;
+        return value;
+    };
+    DataViewEx.prototype.getUint16Array = function (size) {
+        var a = [];
+        for (var i = 0; i < size; i++) {
+            a.push(this.getUint16());
+        }
+        return a;
+    };
+    DataViewEx.prototype.getInt32 = function () {
+        var value = this.dv.getInt32(this.offset, this.littleEndian);
+        this.offset += 4;
+        return value;
+    };
+    DataViewEx.prototype.getInt32Array = function (size) {
+        var a = [];
+        for (var i = 0; i < size; i++) {
+            a.push(this.getInt32());
+        }
+        return a;
+    };
+    DataViewEx.prototype.getUint32 = function () {
+        var value = this.dv.getUint32(this.offset, this.littleEndian);
+        this.offset += 4;
+        return value;
+    };
+    DataViewEx.prototype.getUint32Array = function (size) {
+        var a = [];
+        for (var i = 0; i < size; i++) {
+            a.push(this.getUint32());
+        }
+        return a;
+    };
+    DataViewEx.prototype.getFloat32 = function () {
+        var value = this.dv.getFloat32(this.offset, this.littleEndian);
+        this.offset += 4;
+        return value;
+    };
+    DataViewEx.prototype.getFloat32Array = function (size) {
+        var a = [];
+        for (var i = 0; i < size; i++) {
+            a.push(this.getFloat32());
+        }
+        return a;
+    };
+    DataViewEx.prototype.getFloat64 = function () {
+        var value = this.dv.getFloat64(this.offset, this.littleEndian);
+        this.offset += 8;
+        return value;
+    };
+    DataViewEx.prototype.getFloat64Array = function (size) {
+        var a = [];
+        for (var i = 0; i < size; i++) {
+            a.push(this.getFloat64());
+        }
+        return a;
+    };
+    DataViewEx.prototype.getIndexSize = function () {
+        var size = this.getUint8();
+        if (size === 1 || size === 2 || size === 4)
+            return size;
+        throw 'unknown number type ' + size + ' exception.';
+    };
+    DataViewEx.prototype.getIndex = function (type, isUnsigned) {
+        if (isUnsigned === void 0) { isUnsigned = false; }
+        switch (type) {
+            case 1:
+                return (isUnsigned === true) ? this.getUint8() : this.getInt8();
+            case 2:
+                return (isUnsigned === true) ? this.getUint16() : this.getInt16();
+            case 4:
+                return this.getInt32(); // No Uint32
+            default:
+                throw 'unknown number type ' + type + ' exception.';
+        }
+    };
+    DataViewEx.prototype.getIndexArray = function (type, size, isUnsigned) {
+        if (isUnsigned === void 0) { isUnsigned = false; }
+        var a = [];
+        for (var i = 0; i < size; i++) {
+            a.push(this.getIndex(type, isUnsigned));
+        }
+        return a;
+    };
+    DataViewEx.prototype.getChars = function (size) {
+        var str = '';
+        while (size > 0) {
+            var value = this.getUint8();
+            size--;
+            if (value === 0) {
+                break;
+            }
+            str += String.fromCharCode(value);
+        }
+        while (size > 0) {
+            this.getUint8();
+            size--;
+        }
+        return str;
+    };
+    DataViewEx.prototype.getSjisStringsAsUnicode = function (size) {
+        var a = [];
+        while (size > 0) {
+            var value = this.getUint8();
+            size--;
+            if (value === 0) {
+                break;
+            }
+            a.push(value);
+        }
+        while (size > 0) {
+            this.getUint8();
+            size--;
+        }
+        return this.encoder.s2u(new Uint8Array(a));
+    };
+    DataViewEx.prototype.getUnicodeStrings = function (size) {
+        var str = '';
+        while (size > 0) {
+            var value = this.getUint16();
+            size -= 2;
+            if (value === 0) {
+                break;
+            }
+            str += String.fromCharCode(value);
+        }
+        while (size > 0) {
+            this.getUint8();
+            size--;
+        }
+        return str;
+    };
+    DataViewEx.prototype.getTextBuffer = function () {
+        var size = this.getUint32();
+        return this.getUnicodeStrings(size);
+    };
+    return DataViewEx;
+}());
 
 /**
  * @author takahiro / https://github.com/takahirox
  */
+var DataCreationHelper = /** @class */ (function () {
+    function DataCreationHelper() {
+    }
+    DataCreationHelper.prototype.leftToRightVector3 = function (v) {
+        v[2] = -v[2];
+    };
+    DataCreationHelper.prototype.leftToRightQuaternion = function (q) {
+        q[0] = -q[0];
+        q[1] = -q[1];
+    };
+    DataCreationHelper.prototype.leftToRightEuler = function (r) {
+        r[0] = -r[0];
+        r[1] = -r[1];
+    };
+    DataCreationHelper.prototype.leftToRightIndexOrder = function (p) {
+        var tmp = p[2];
+        p[2] = p[0];
+        p[0] = tmp;
+    };
+    DataCreationHelper.prototype.leftToRightVector3Range = function (v1, v2) {
+        var tmp = -v2[2];
+        v2[2] = -v1[2];
+        v1[2] = tmp;
+    };
+    DataCreationHelper.prototype.leftToRightEulerRange = function (r1, r2) {
+        var tmp1 = -r2[0];
+        var tmp2 = -r2[1];
+        r2[0] = -r1[0];
+        r2[1] = -r1[1];
+        r1[0] = tmp1;
+        r1[1] = tmp2;
+    };
+    return DataCreationHelper;
+}());
 
-function DataCreationHelper () {
+var __assign = (undefined && undefined.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
+/** @author takahiro / https://github.com/takahirox */
+/** Keep the original count-driven loops, including fractional face counts. */
+function readRecords(count, read) {
+    var records = [];
+    for (var i = 0; i < count; i++)
+        records.push(read());
+    return records;
 }
-
-DataCreationHelper.prototype = {
-
-	constructor: DataCreationHelper,
-
-	leftToRightVector3: function ( v ) {
-
-		v[ 2 ] = -v[ 2 ];
-
-	},
-
-	leftToRightQuaternion: function ( q ) {
-
-		q[ 0 ] = -q[ 0 ];
-		q[ 1 ] = -q[ 1 ];
-
-	},
-
-	leftToRightEuler: function ( r ) {
-
-		r[ 0 ] = -r[ 0 ];
-		r[ 1 ] = -r[ 1 ];
-
-	},
-
-	leftToRightIndexOrder: function ( p ) {
-
-		var tmp = p[ 2 ];
-		p[ 2 ] = p[ 0 ];
-		p[ 0 ] = tmp;
-
-	},
-
-	leftToRightVector3Range: function ( v1, v2 ) {
-
-		var tmp = -v2[ 2 ];
-		v2[ 2 ] = -v1[ 2 ];
-		v1[ 2 ] = tmp;
-
-	},
-
-	leftToRightEulerRange: function ( r1, r2 ) {
-
-		var tmp1 = -r2[ 0 ];
-		var tmp2 = -r2[ 1 ];
-		r2[ 0 ] = -r1[ 0 ];
-		r2[ 1 ] = -r1[ 1 ];
-		r1[ 0 ] = tmp1;
-		r1[ 1 ] = tmp2;
-
-	}
-
-};
-
-/**
- * @author takahiro / https://github.com/takahirox
- */
-
-function Parser() {
+/** A checked boundary for arrays/text; noUncheckedIndexedAccess stays enabled. */
+function at(values, index) {
+    var value = values[index];
+    if (value === undefined)
+        throw new RangeError('Missing value at index ' + index);
+    return value;
 }
-
-Parser.prototype.parsePmd = function ( buffer, leftToRight ) {
-
-	var pmd = {};
-	var dv = new DataViewEx( buffer );
-
-	pmd.metadata = {};
-	pmd.metadata.format = 'pmd';
-	pmd.metadata.coordinateSystem = 'left';
-
-	var parseHeader = function () {
-
-		var metadata = pmd.metadata;
-		metadata.magic = dv.getChars( 3 );
-
-		if ( metadata.magic !== 'Pmd' ) {
-
-			throw 'PMD file magic is not Pmd, but ' + metadata.magic;
-
-		}
-
-		metadata.version = dv.getFloat32();
-		metadata.modelName = dv.getSjisStringsAsUnicode( 20 );
-		metadata.comment = dv.getSjisStringsAsUnicode( 256 );
-
-	};
-
-	var parseVertices = function () {
-
-		var parseVertex = function () {
-
-			var p = {};
-			p.position = dv.getFloat32Array( 3 );
-			p.normal = dv.getFloat32Array( 3 );
-			p.uv = dv.getFloat32Array( 2 );
-			p.skinIndices = dv.getUint16Array( 2 );
-			p.skinWeights = [ dv.getUint8() / 100 ];
-			p.skinWeights.push( 1.0 - p.skinWeights[ 0 ] );
-			p.edgeFlag = dv.getUint8();
-			return p;
-
-		};
-
-		var metadata = pmd.metadata;
-		metadata.vertexCount = dv.getUint32();
-
-		pmd.vertices = [];
-
-		for ( var i = 0; i < metadata.vertexCount; i++ ) {
-
-			pmd.vertices.push( parseVertex() );
-
-		}
-
-	};
-
-	var parseFaces = function () {
-
-		var parseFace = function () {
-
-			var p = {};
-			p.indices = dv.getUint16Array( 3 );
-			return p;
-
-		};
-
-		var metadata = pmd.metadata;
-		metadata.faceCount = dv.getUint32() / 3;
-
-		pmd.faces = [];
-
-		for ( var i = 0; i < metadata.faceCount; i++ ) {
-
-			pmd.faces.push( parseFace() );
-
-		}
-
-	};
-
-	var parseMaterials = function () {
-
-		var parseMaterial = function () {
-
-			var p = {};
-			p.diffuse = dv.getFloat32Array( 4 );
-			p.shininess = dv.getFloat32();
-			p.specular = dv.getFloat32Array( 3 );
-			p.ambient = dv.getFloat32Array( 3 );
-			p.toonIndex = dv.getInt8();
-			p.edgeFlag = dv.getUint8();
-			p.faceCount = dv.getUint32() / 3;
-			p.fileName = dv.getSjisStringsAsUnicode( 20 );
-			return p;
-
-		};
-
-		var metadata = pmd.metadata;
-		metadata.materialCount = dv.getUint32();
-
-		pmd.materials = [];
-
-		for ( var i = 0; i < metadata.materialCount; i++ ) {
-
-			pmd.materials.push( parseMaterial() );
-
-		}
-
-	};
-
-	var parseBones = function () {
-
-		var parseBone = function () {
-
-			var p = {};
-			p.name = dv.getSjisStringsAsUnicode( 20 );
-			p.parentIndex = dv.getInt16();
-			p.tailIndex = dv.getInt16();
-			p.type = dv.getUint8();
-			p.ikIndex = dv.getInt16();
-			p.position = dv.getFloat32Array( 3 );
-			return p;
-
-		};
-
-		var metadata = pmd.metadata;
-		metadata.boneCount = dv.getUint16();
-
-		pmd.bones = [];
-
-		for ( var i = 0; i < metadata.boneCount; i++ ) {
-
-			pmd.bones.push( parseBone() );
-
-		}
-
-	};
-
-	var parseIks = function () {
-
-		var parseIk = function () {
-
-			var p = {};
-			p.target = dv.getUint16();
-			p.effector = dv.getUint16();
-			p.linkCount = dv.getUint8();
-			p.iteration = dv.getUint16();
-			p.maxAngle = dv.getFloat32();
-
-			p.links = [];
-			for ( var i = 0; i < p.linkCount; i++ ) {
-
-				var link = {};
-				link.index = dv.getUint16();
-				p.links.push( link );
-
-			}
-
-			return p;
-
-		};
-
-		var metadata = pmd.metadata;
-		metadata.ikCount = dv.getUint16();
-
-		pmd.iks = [];
-
-		for ( var i = 0; i < metadata.ikCount; i++ ) {
-
-			pmd.iks.push( parseIk() );
-
-		}
-
-	};
-
-	var parseMorphs = function () {
-
-		var parseMorph = function () {
-
-			var p = {};
-			p.name = dv.getSjisStringsAsUnicode( 20 );
-			p.elementCount = dv.getUint32();
-			p.type = dv.getUint8();
-
-			p.elements = [];
-			for ( var i = 0; i < p.elementCount; i++ ) {
-
-				p.elements.push( {
-					index: dv.getUint32(),
-					position: dv.getFloat32Array( 3 )
-				} ) ;
-
-			}
-
-			return p;
-
-		};
-
-		var metadata = pmd.metadata;
-		metadata.morphCount = dv.getUint16();
-
-		pmd.morphs = [];
-
-		for ( var i = 0; i < metadata.morphCount; i++ ) {
-
-			pmd.morphs.push( parseMorph() );
-
-		}
-
-
-	};
-
-	var parseMorphFrames = function () {
-
-		var parseMorphFrame = function () {
-
-			var p = {};
-			p.index = dv.getUint16();
-			return p;
-
-		};
-
-		var metadata = pmd.metadata;
-		metadata.morphFrameCount = dv.getUint8();
-
-		pmd.morphFrames = [];
-
-		for ( var i = 0; i < metadata.morphFrameCount; i++ ) {
-
-			pmd.morphFrames.push( parseMorphFrame() );
-
-		}
-
-	};
-
-	var parseBoneFrameNames = function () {
-
-		var parseBoneFrameName = function () {
-
-			var p = {};
-			p.name = dv.getSjisStringsAsUnicode( 50 );
-			return p;
-
-		};
-
-		var metadata = pmd.metadata;
-		metadata.boneFrameNameCount = dv.getUint8();
-
-		pmd.boneFrameNames = [];
-
-		for ( var i = 0; i < metadata.boneFrameNameCount; i++ ) {
-
-			pmd.boneFrameNames.push( parseBoneFrameName() );
-
-		}
-
-	};
-
-	var parseBoneFrames = function () {
-
-		var parseBoneFrame = function () {
-
-			var p = {};
-			p.boneIndex = dv.getInt16();
-			p.frameIndex = dv.getUint8();
-			return p;
-
-		};
-
-		var metadata = pmd.metadata;
-		metadata.boneFrameCount = dv.getUint32();
-
-		pmd.boneFrames = [];
-
-		for ( var i = 0; i < metadata.boneFrameCount; i++ ) {
-
-			pmd.boneFrames.push( parseBoneFrame() );
-
-		}
-
-	};
-
-	var parseEnglishHeader = function () {
-
-		var metadata = pmd.metadata;
-		metadata.englishCompatibility = dv.getUint8();
-
-		if ( metadata.englishCompatibility > 0 ) {
-
-			metadata.englishModelName = dv.getSjisStringsAsUnicode( 20 );
-			metadata.englishComment = dv.getSjisStringsAsUnicode( 256 );
-
-		}
-
-	};
-
-	var parseEnglishBoneNames = function () {
-
-		var parseEnglishBoneName = function () {
-
-			var p = {};
-			p.name = dv.getSjisStringsAsUnicode( 20 );
-			return p;
-
-		};
-
-		var metadata = pmd.metadata;
-
-		if ( metadata.englishCompatibility === 0 ) {
-
-			return;
-
-		}
-
-		pmd.englishBoneNames = [];
-
-		for ( var i = 0; i < metadata.boneCount; i++ ) {
-
-			pmd.englishBoneNames.push( parseEnglishBoneName() );
-
-		}
-
-	};
-
-	var parseEnglishMorphNames = function () {
-
-		var parseEnglishMorphName = function () {
-
-			var p = {};
-			p.name = dv.getSjisStringsAsUnicode( 20 );
-			return p;
-
-		};
-
-		var metadata = pmd.metadata;
-
-		if ( metadata.englishCompatibility === 0 ) {
-
-			return;
-
-		}
-
-		pmd.englishMorphNames = [];
-
-		for ( var i = 0; i < metadata.morphCount - 1; i++ ) {
-
-			pmd.englishMorphNames.push( parseEnglishMorphName() );
-
-		}
-
-	};
-
-	var parseEnglishBoneFrameNames = function () {
-
-		var parseEnglishBoneFrameName = function () {
-
-			var p = {};
-			p.name = dv.getSjisStringsAsUnicode( 50 );
-			return p;
-
-		};
-
-		var metadata = pmd.metadata;
-
-		if ( metadata.englishCompatibility === 0 ) {
-
-			return;
-
-		}
-
-		pmd.englishBoneFrameNames = [];
-
-		for ( var i = 0; i < metadata.boneFrameNameCount; i++ ) {
-
-			pmd.englishBoneFrameNames.push( parseEnglishBoneFrameName() );
-
-		}
-
-	};
-
-	var parseToonTextures = function () {
-
-		var parseToonTexture = function () {
-
-			var p = {};
-			p.fileName = dv.getSjisStringsAsUnicode( 100 );
-			return p;
-
-		};
-
-		pmd.toonTextures = [];
-
-		for ( var i = 0; i < 10; i++ ) {
-
-			pmd.toonTextures.push( parseToonTexture() );
-
-		}
-
-	};
-
-	var parseRigidBodies = function () {
-
-		var parseRigidBody = function () {
-
-			var p = {};
-			p.name = dv.getSjisStringsAsUnicode( 20 );
-			p.boneIndex = dv.getInt16();
-			p.groupIndex = dv.getUint8();
-			p.groupTarget = dv.getUint16();
-			p.shapeType = dv.getUint8();
-			p.width = dv.getFloat32();
-			p.height = dv.getFloat32();
-			p.depth = dv.getFloat32();
-			p.position = dv.getFloat32Array( 3 );
-			p.rotation = dv.getFloat32Array( 3 );
-			p.weight = dv.getFloat32();
-			p.positionDamping = dv.getFloat32();
-			p.rotationDamping = dv.getFloat32();
-			p.restitution = dv.getFloat32();
-			p.friction = dv.getFloat32();
-			p.type = dv.getUint8();
-			return p;
-
-		};
-
-		var metadata = pmd.metadata;
-		metadata.rigidBodyCount = dv.getUint32();
-
-		pmd.rigidBodies = [];
-
-		for ( var i = 0; i < metadata.rigidBodyCount; i++ ) {
-
-			pmd.rigidBodies.push( parseRigidBody() );
-
-		}
-
-	};
-
-	var parseConstraints = function () {
-
-		var parseConstraint = function () {
-
-			var p = {};
-			p.name = dv.getSjisStringsAsUnicode( 20 );
-			p.rigidBodyIndex1 = dv.getUint32();
-			p.rigidBodyIndex2 = dv.getUint32();
-			p.position = dv.getFloat32Array( 3 );
-			p.rotation = dv.getFloat32Array( 3 );
-			p.translationLimitation1 = dv.getFloat32Array( 3 );
-			p.translationLimitation2 = dv.getFloat32Array( 3 );
-			p.rotationLimitation1 = dv.getFloat32Array( 3 );
-			p.rotationLimitation2 = dv.getFloat32Array( 3 );
-			p.springPosition = dv.getFloat32Array( 3 );
-			p.springRotation = dv.getFloat32Array( 3 );
-			return p;
-
-		};
-
-		var metadata = pmd.metadata;
-		metadata.constraintCount = dv.getUint32();
-
-		pmd.constraints = [];
-
-		for ( var i = 0; i < metadata.constraintCount; i++ ) {
-
-			pmd.constraints.push( parseConstraint() );
-
-		}
-
-	};
-
-	parseHeader();
-	parseVertices();
-	parseFaces();
-	parseMaterials();
-	parseBones();
-	parseIks();
-	parseMorphs();
-	parseMorphFrames();
-	parseBoneFrameNames();
-	parseBoneFrames();
-	parseEnglishHeader();
-	parseEnglishBoneNames();
-	parseEnglishMorphNames();
-	parseEnglishBoneFrameNames();
-	parseToonTextures();
-	parseRigidBodies();
-	parseConstraints();
-
-	if ( leftToRight === true ) this.leftToRightModel( pmd );
-
-	// console.log( pmd ); // for console debug
-
-	return pmd;
-
-};
-
-Parser.prototype.parsePmx = function ( buffer, leftToRight ) {
-
-	var pmx = {};
-	var dv = new DataViewEx( buffer );
-
-	pmx.metadata = {};
-	pmx.metadata.format = 'pmx';
-	pmx.metadata.coordinateSystem = 'left';
-
-	var parseHeader = function () {
-
-		var metadata = pmx.metadata;
-		metadata.magic = dv.getChars( 4 );
-
-		// Note: don't remove the last blank space.
-		if ( metadata.magic !== 'PMX ' ) {
-
-			throw 'PMX file magic is not PMX , but ' + metadata.magic;
-
-		}
-
-		metadata.version = dv.getFloat32();
-
-		if ( metadata.version !== 2.0 && metadata.version !== 2.1 ) {
-
-			throw 'PMX version ' + metadata.version + ' is not supported.';
-
-		}
-
-		metadata.headerSize = dv.getUint8();
-		metadata.encoding = dv.getUint8();
-		metadata.additionalUvNum = dv.getUint8();
-		metadata.vertexIndexSize = dv.getUint8();
-		metadata.textureIndexSize = dv.getUint8();
-		metadata.materialIndexSize = dv.getUint8();
-		metadata.boneIndexSize = dv.getUint8();
-		metadata.morphIndexSize = dv.getUint8();
-		metadata.rigidBodyIndexSize = dv.getUint8();
-		metadata.modelName = dv.getTextBuffer();
-		metadata.englishModelName = dv.getTextBuffer();
-		metadata.comment = dv.getTextBuffer();
-		metadata.englishComment = dv.getTextBuffer();
-
-	};
-
-	var parseVertices = function () {
-
-		var parseVertex = function () {
-
-			var p = {};
-			p.position = dv.getFloat32Array( 3 );
-			p.normal = dv.getFloat32Array( 3 );
-			p.uv = dv.getFloat32Array( 2 );
-
-			p.auvs = [];
-
-			for ( var i = 0; i < pmx.metadata.additionalUvNum; i++ ) {
-
-				p.auvs.push( dv.getFloat32Array( 4 ) );
-
-			}
-
-			p.type = dv.getUint8();
-
-			var indexSize = metadata.boneIndexSize;
-
-			if ( p.type === 0 ) {  // BDEF1
-
-				p.skinIndices = dv.getIndexArray( indexSize, 1 );
-				p.skinWeights = [ 1.0 ];
-
-			} else if ( p.type === 1 ) {  // BDEF2
-
-				p.skinIndices = dv.getIndexArray( indexSize, 2 );
-				p.skinWeights = dv.getFloat32Array( 1 );
-				p.skinWeights.push( 1.0 - p.skinWeights[ 0 ] );
-
-			} else if ( p.type === 2 ) {  // BDEF4
-
-				p.skinIndices = dv.getIndexArray( indexSize, 4 );
-				p.skinWeights = dv.getFloat32Array( 4 );
-
-			} else if ( p.type === 3 ) {  // SDEF
-
-				p.skinIndices = dv.getIndexArray( indexSize, 2 );
-				p.skinWeights = dv.getFloat32Array( 1 );
-				p.skinWeights.push( 1.0 - p.skinWeights[ 0 ] );
-
-				p.skinC = dv.getFloat32Array( 3 );
-				p.skinR0 = dv.getFloat32Array( 3 );
-				p.skinR1 = dv.getFloat32Array( 3 );
-
-				// SDEF is not supported yet and is handled as BDEF2 so far.
-				// TODO: SDEF support
-				p.type = 1;
-
-			} else {
-
-				throw 'unsupport bone type ' + p.type + ' exception.';
-
-			}
-
-			p.edgeRatio = dv.getFloat32();
-			return p;
-
-		};
-
-		var metadata = pmx.metadata;
-		metadata.vertexCount = dv.getUint32();
-
-		pmx.vertices = [];
-
-		for ( var i = 0; i < metadata.vertexCount; i++ ) {
-
-			pmx.vertices.push( parseVertex() );
-
-		}
-
-	};
-
-	var parseFaces = function () {
-
-		var parseFace = function () {
-
-			var p = {};
-			p.indices = dv.getIndexArray( metadata.vertexIndexSize, 3, true );
-			return p;
-
-		};
-
-		var metadata = pmx.metadata;
-		metadata.faceCount = dv.getUint32() / 3;
-
-		pmx.faces = [];
-
-		for ( var i = 0; i < metadata.faceCount; i++ ) {
-
-			pmx.faces.push( parseFace() );
-
-		}
-
-	};
-
-	var parseTextures = function () {
-
-		var parseTexture = function () {
-
-			return dv.getTextBuffer();
-
-		};
-
-		var metadata = pmx.metadata;
-		metadata.textureCount = dv.getUint32();
-
-		pmx.textures = [];
-
-		for ( var i = 0; i < metadata.textureCount; i++ ) {
-
-			pmx.textures.push( parseTexture() );
-
-		}
-
-	};
-
-	var parseMaterials = function () {
-
-		var parseMaterial = function () {
-
-			var p = {};
-			p.name = dv.getTextBuffer();
-			p.englishName = dv.getTextBuffer();
-			p.diffuse = dv.getFloat32Array( 4 );
-			p.specular = dv.getFloat32Array( 3 );
-			p.shininess = dv.getFloat32();
-			p.ambient = dv.getFloat32Array( 3 );
-			p.flag = dv.getUint8();
-			p.edgeColor = dv.getFloat32Array( 4 );
-			p.edgeSize = dv.getFloat32();
-			p.textureIndex = dv.getIndex( pmx.metadata.textureIndexSize );
-			p.envTextureIndex = dv.getIndex( pmx.metadata.textureIndexSize );
-			p.envFlag = dv.getUint8();
-			p.toonFlag = dv.getUint8();
-
-			if ( p.toonFlag === 0 ) {
-
-				p.toonIndex = dv.getIndex( pmx.metadata.textureIndexSize );
-
-			} else if ( p.toonFlag === 1 ) {
-
-				p.toonIndex = dv.getInt8();
-
-			} else {
-
-				throw 'unknown toon flag ' + p.toonFlag + ' exception.';
-
-			}
-
-			p.comment = dv.getTextBuffer();
-			p.faceCount = dv.getUint32() / 3;
-			return p;
-
-		};
-
-		var metadata = pmx.metadata;
-		metadata.materialCount = dv.getUint32();
-
-		pmx.materials = [];
-
-		for ( var i = 0; i < metadata.materialCount; i++ ) {
-
-			pmx.materials.push( parseMaterial() );
-
-		}
-
-	};
-
-	var parseBones = function () {
-
-		var parseBone = function () {
-
-			var p = {};
-			p.name = dv.getTextBuffer();
-			p.englishName = dv.getTextBuffer();
-			p.position = dv.getFloat32Array( 3 );
-			p.parentIndex = dv.getIndex( pmx.metadata.boneIndexSize );
-			p.transformationClass = dv.getUint32();
-			p.flag = dv.getUint16();
-
-			if ( p.flag & 0x1 ) {
-
-				p.connectIndex = dv.getIndex( pmx.metadata.boneIndexSize );
-
-			} else {
-
-				p.offsetPosition = dv.getFloat32Array( 3 );
-
-			}
-
-			if ( p.flag & 0x100 || p.flag & 0x200 ) {
-
-				// Note: I don't think Grant is an appropriate name
-				//       but I found that some English translated MMD tools use this term
-				//       so I've named it Grant so far.
-				//       I'd rename to more appropriate name from Grant later.
-				var grant = {};
-
-				grant.isLocal = ( p.flag & 0x80 ) !== 0 ? true : false;
-				grant.affectRotation = ( p.flag & 0x100 ) !== 0 ? true : false;
-				grant.affectPosition = ( p.flag & 0x200 ) !== 0 ? true : false;
-				grant.parentIndex = dv.getIndex( pmx.metadata.boneIndexSize );
-				grant.ratio = dv.getFloat32();
-
-				p.grant = grant;
-
-			}
-
-			if ( p.flag & 0x400 ) {
-
-				p.fixAxis = dv.getFloat32Array( 3 );
-
-			}
-
-			if ( p.flag & 0x800 ) {
-
-				p.localXVector = dv.getFloat32Array( 3 );
-				p.localZVector = dv.getFloat32Array( 3 );
-
-			}
-
-			if ( p.flag & 0x2000 ) {
-
-				p.key = dv.getUint32();
-
-			}
-
-			if ( p.flag & 0x20 ) {
-
-				var ik = {};
-
-				ik.effector = dv.getIndex( pmx.metadata.boneIndexSize );
-				ik.target = null;
-				ik.iteration = dv.getUint32();
-				ik.maxAngle = dv.getFloat32();
-				ik.linkCount = dv.getUint32();
-				ik.links = [];
-
-				for ( var i = 0; i < ik.linkCount; i++ ) {
-
-					var link = {};
-					link.index = dv.getIndex( pmx.metadata.boneIndexSize );
-					link.angleLimitation = dv.getUint8();
-
-					if ( link.angleLimitation === 1 ) {
-
-						link.lowerLimitationAngle = dv.getFloat32Array( 3 );
-						link.upperLimitationAngle = dv.getFloat32Array( 3 );
-
-					}
-
-					ik.links.push( link );
-
-				}
-
-				p.ik = ik;
-			}
-
-			return p;
-
-		};
-
-		var metadata = pmx.metadata;
-		metadata.boneCount = dv.getUint32();
-
-		pmx.bones = [];
-
-		for ( var i = 0; i < metadata.boneCount; i++ ) {
-
-			pmx.bones.push( parseBone() );
-
-		}
-
-	};
-
-	var parseMorphs = function () {
-
-		var parseMorph = function () {
-
-			var p = {};
-			p.name = dv.getTextBuffer();
-			p.englishName = dv.getTextBuffer();
-			p.panel = dv.getUint8();
-			p.type = dv.getUint8();
-			p.elementCount = dv.getUint32();
-			p.elements = [];
-
-			for ( var i = 0; i < p.elementCount; i++ ) {
-
-				if ( p.type === 0 ) {  // group morph
-
-					var m = {};
-					m.index = dv.getIndex( pmx.metadata.morphIndexSize );
-					m.ratio = dv.getFloat32();
-					p.elements.push( m );
-
-				} else if ( p.type === 1 ) {  // vertex morph
-
-					var m = {};
-					m.index = dv.getIndex( pmx.metadata.vertexIndexSize, true );
-					m.position = dv.getFloat32Array( 3 );
-					p.elements.push( m );
-
-				} else if ( p.type === 2 ) {  // bone morph
-
-					var m = {};
-					m.index = dv.getIndex( pmx.metadata.boneIndexSize );
-					m.position = dv.getFloat32Array( 3 );
-					m.rotation = dv.getFloat32Array( 4 );
-					p.elements.push( m );
-
-				} else if ( p.type === 3 ) {  // uv morph
-
-					var m = {};
-					m.index = dv.getIndex( pmx.metadata.vertexIndexSize, true );
-					m.uv = dv.getFloat32Array( 4 );
-					p.elements.push( m );
-
-				} else if ( p.type === 4 ) {  // additional uv1
-
-					// TODO: implement
-
-				} else if ( p.type === 5 ) {  // additional uv2
-
-					// TODO: implement
-
-				} else if ( p.type === 6 ) {  // additional uv3
-
-					// TODO: implement
-
-				} else if ( p.type === 7 ) {  // additional uv4
-
-					// TODO: implement
-
-				} else if ( p.type === 8 ) {  // material morph
-
-					var m = {};
-					m.index = dv.getIndex( pmx.metadata.materialIndexSize );
-					m.type = dv.getUint8();
-					m.diffuse = dv.getFloat32Array( 4 );
-					m.specular = dv.getFloat32Array( 3 );
-					m.shininess = dv.getFloat32();
-					m.ambient = dv.getFloat32Array( 3 );
-					m.edgeColor = dv.getFloat32Array( 4 );
-					m.edgeSize = dv.getFloat32();
-					m.textureColor = dv.getFloat32Array( 4 );
-					m.sphereTextureColor = dv.getFloat32Array( 4 );
-					m.toonColor = dv.getFloat32Array( 4 );
-					p.elements.push( m );
-
-				}
-
-			}
-
-			return p;
-
-		};
-
-		var metadata = pmx.metadata;
-		metadata.morphCount = dv.getUint32();
-
-		pmx.morphs = [];
-
-		for ( var i = 0; i < metadata.morphCount; i++ ) {
-
-			pmx.morphs.push( parseMorph() );
-
-		}
-
-	};
-
-	var parseFrames = function () {
-
-		var parseFrame = function () {
-
-			var p = {};
-			p.name = dv.getTextBuffer();
-			p.englishName = dv.getTextBuffer();
-			p.type = dv.getUint8();
-			p.elementCount = dv.getUint32();
-			p.elements = [];
-
-			for ( var i = 0; i < p.elementCount; i++ ) {
-
-				var e = {};
-				e.target = dv.getUint8();
-				e.index = ( e.target === 0 ) ? dv.getIndex( pmx.metadata.boneIndexSize ) : dv.getIndex( pmx.metadata.morphIndexSize );
-				p.elements.push( e );
-
-			}
-
-			return p;
-
-		};
-
-		var metadata = pmx.metadata;
-		metadata.frameCount = dv.getUint32();
-
-		pmx.frames = [];
-
-		for ( var i = 0; i < metadata.frameCount; i++ ) {
-
-			pmx.frames.push( parseFrame() );
-
-		}
-
-	};
-
-	var parseRigidBodies = function () {
-
-		var parseRigidBody = function () {
-
-			var p = {};
-			p.name = dv.getTextBuffer();
-			p.englishName = dv.getTextBuffer();
-			p.boneIndex = dv.getIndex( pmx.metadata.boneIndexSize );
-			p.groupIndex = dv.getUint8();
-			p.groupTarget = dv.getUint16();
-			p.shapeType = dv.getUint8();
-			p.width = dv.getFloat32();
-			p.height = dv.getFloat32();
-			p.depth = dv.getFloat32();
-			p.position = dv.getFloat32Array( 3 );
-			p.rotation = dv.getFloat32Array( 3 );
-			p.weight = dv.getFloat32();
-			p.positionDamping = dv.getFloat32();
-			p.rotationDamping = dv.getFloat32();
-			p.restitution = dv.getFloat32();
-			p.friction = dv.getFloat32();
-			p.type = dv.getUint8();
-			return p;
-
-		};
-
-		var metadata = pmx.metadata;
-		metadata.rigidBodyCount = dv.getUint32();
-
-		pmx.rigidBodies = [];
-
-		for ( var i = 0; i < metadata.rigidBodyCount; i++ ) {
-
-			pmx.rigidBodies.push( parseRigidBody() );
-
-		}
-
-	};
-
-	var parseConstraints = function () {
-
-		var parseConstraint = function () {
-
-			var p = {};
-			p.name = dv.getTextBuffer();
-			p.englishName = dv.getTextBuffer();
-			p.type = dv.getUint8();
-			p.rigidBodyIndex1 = dv.getIndex( pmx.metadata.rigidBodyIndexSize );
-			p.rigidBodyIndex2 = dv.getIndex( pmx.metadata.rigidBodyIndexSize );
-			p.position = dv.getFloat32Array( 3 );
-			p.rotation = dv.getFloat32Array( 3 );
-			p.translationLimitation1 = dv.getFloat32Array( 3 );
-			p.translationLimitation2 = dv.getFloat32Array( 3 );
-			p.rotationLimitation1 = dv.getFloat32Array( 3 );
-			p.rotationLimitation2 = dv.getFloat32Array( 3 );
-			p.springPosition = dv.getFloat32Array( 3 );
-			p.springRotation = dv.getFloat32Array( 3 );
-			return p;
-
-		};
-
-		var metadata = pmx.metadata;
-		metadata.constraintCount = dv.getUint32();
-
-		pmx.constraints = [];
-
-		for ( var i = 0; i < metadata.constraintCount; i++ ) {
-
-			pmx.constraints.push( parseConstraint() );
-
-		}
-
-	};
-
-	parseHeader();
-	parseVertices();
-	parseFaces();
-	parseTextures();
-	parseMaterials();
-	parseBones();
-	parseMorphs();
-	parseFrames();
-	parseRigidBodies();
-	parseConstraints();
-
-	if ( leftToRight === true ) this.leftToRightModel( pmx );
-
-	// console.log( pmx ); // for console debug
-
-	return pmx;
-
-};
-
-Parser.prototype.parseVmd = function ( buffer, leftToRight ) {
-
-	var vmd = {};
-	var dv = new DataViewEx( buffer );
-
-	vmd.metadata = {};
-	vmd.metadata.coordinateSystem = 'left';
-
-	var parseHeader = function () {
-
-		var metadata = vmd.metadata;
-		metadata.magic = dv.getChars( 30 );
-
-		if ( metadata.magic !== 'Vocaloid Motion Data 0002' ) {
-
-			throw 'VMD file magic is not Vocaloid Motion Data 0002, but ' + metadata.magic;
-
-		}
-
-		metadata.name = dv.getSjisStringsAsUnicode( 20 );
-
-	};
-
-	var parseMotions = function () {
-
-		var parseMotion = function () {
-
-			var p = {};
-			p.boneName = dv.getSjisStringsAsUnicode( 15 );
-			p.frameNum = dv.getUint32();
-			p.position = dv.getFloat32Array( 3 );
-			p.rotation = dv.getFloat32Array( 4 );
-			p.interpolation = dv.getUint8Array( 64 );
-			return p;
-
-		};
-
-		var metadata = vmd.metadata;
-		metadata.motionCount = dv.getUint32();
-
-		vmd.motions = [];
-		for ( var i = 0; i < metadata.motionCount; i++ ) {
-
-			vmd.motions.push( parseMotion() );
-
-		}
-
-	};
-
-	var parseMorphs = function () {
-
-		var parseMorph = function () {
-
-			var p = {};
-			p.morphName = dv.getSjisStringsAsUnicode( 15 );
-			p.frameNum = dv.getUint32();
-			p.weight = dv.getFloat32();
-			return p;
-
-		};
-
-		var metadata = vmd.metadata;
-		metadata.morphCount = dv.getUint32();
-
-		vmd.morphs = [];
-		for ( var i = 0; i < metadata.morphCount; i++ ) {
-
-			vmd.morphs.push( parseMorph() );
-
-		}
-
-	};
-
-	var parseCameras = function () {
-
-		var parseCamera = function () {
-
-			var p = {};
-			p.frameNum = dv.getUint32();
-			p.distance = dv.getFloat32();
-			p.position = dv.getFloat32Array( 3 );
-			p.rotation = dv.getFloat32Array( 3 );
-			p.interpolation = dv.getUint8Array( 24 );
-			p.fov = dv.getUint32();
-			p.perspective = dv.getUint8();
-			return p;
-
-		};
-
-		var metadata = vmd.metadata;
-		metadata.cameraCount = dv.getUint32();
-
-		vmd.cameras = [];
-		for ( var i = 0; i < metadata.cameraCount; i++ ) {
-
-			vmd.cameras.push( parseCamera() );
-
-		}
-
-	};
-
-	parseHeader();
-	parseMotions();
-	parseMorphs();
-	parseCameras();
-
-	if ( leftToRight === true ) this.leftToRightVmd( vmd );
-
-	// console.log( vmd ); // for console debug
-
-	return vmd;
-
-};
-
-Parser.prototype.parseVpd = function ( text, leftToRight ) {
-
-	var vpd = {};
-
-	vpd.metadata = {};
-	vpd.metadata.coordinateSystem = 'left';
-
-	vpd.bones = [];
-
-	var commentPatternG = /\/\/\w*(\r|\n|\r\n)/g;
-	var newlinePattern = /\r|\n|\r\n/;
-
-	var lines = text.replace( commentPatternG, '' ).split( newlinePattern );
-
-	function throwError () {
-
-		throw 'the file seems not vpd file.';
-
-	}
-
-	function checkMagic () {
-
-		if ( lines[ 0 ] !== 'Vocaloid Pose Data file' ) {
-
-			throwError();
-
-		}
-
-	}
-
-	function parseHeader () {
-
-		if ( lines.length < 4 ) {
-
-			throwError();
-
-		}
-
-		vpd.metadata.parentFile = lines[ 2 ];
-		vpd.metadata.boneCount = parseInt( lines[ 3 ] );
-
-	}
-
-	function parseBones () {
-
-		var boneHeaderPattern = /^\s*(Bone[0-9]+)\s*\{\s*(.*)$/;
-		var boneVectorPattern = /^\s*(-?[0-9]+\.[0-9]+)\s*,\s*(-?[0-9]+\.[0-9]+)\s*,\s*(-?[0-9]+\.[0-9]+)\s*;/;
-		var boneQuaternionPattern = /^\s*(-?[0-9]+\.[0-9]+)\s*,\s*(-?[0-9]+\.[0-9]+)\s*,\s*(-?[0-9]+\.[0-9]+)\s*,\s*(-?[0-9]+\.[0-9]+)\s*;/;
-		var boneFooterPattern = /^\s*}/;
-
-		var bones = vpd.bones;
-		var n = null;
-		var v = null;
-		var q = null;
-
-		for ( var i = 4; i < lines.length; i++ ) {
-
-			var line = lines[ i ];
-
-			var result;
-
-			result = line.match( boneHeaderPattern );
-
-			if ( result !== null ) {
-
-				if ( n !== null ) {
-
-					throwError();
-
-				}
-
-				n = result[ 2 ];
-
-			}
-
-			result = line.match( boneVectorPattern );
-
-			if ( result !== null ) {
-
-				if ( v !== null ) {
-
-					throwError();
-
-				}
-
-				v = [
-
-					parseFloat( result[ 1 ] ),
-					parseFloat( result[ 2 ] ),
-					parseFloat( result[ 3 ] )
-
-				];
-
-			}
-
-			result = line.match( boneQuaternionPattern );
-
-			if ( result !== null ) {
-
-				if ( q !== null ) {
-
-					throwError();
-
-				}
-
-				q = [
-
-					parseFloat( result[ 1 ] ),
-					parseFloat( result[ 2 ] ),
-					parseFloat( result[ 3 ] ),
-					parseFloat( result[ 4 ] )
-
-				];
-
-
-			}
-
-			result = line.match( boneFooterPattern );
-
-			if ( result !== null ) {
-
-				if ( n === null || v === null || q === null ) {
-
-					throwError();
-
-				}
-
-				bones.push( {
-
-					name: n,
-					translation: v,
-					quaternion: q
-
-				} );
-
-				n = null;
-				v = null;
-				q = null;
-
-			}
-
-		}
-
-		if ( n !== null || v !== null || q !== null ) {
-
-			throwError();
-
-		}
-
-	}
-
-	checkMagic();
-	parseHeader();
-	parseBones();
-
-	if ( leftToRight === true ) this.leftToRightVpd( vpd );
-
-	// console.log( vpd );  // for console debug
-
-	return vpd;
-
-};
-
-Parser.prototype.mergeVmds = function ( vmds ) {
-
-	var v = {};
-	v.metadata = {};
-	v.metadata.name = vmds[ 0 ].metadata.name;
-	v.metadata.coordinateSystem = vmds[ 0 ].metadata.coordinateSystem;
-	v.metadata.motionCount = 0;
-	v.metadata.morphCount = 0;
-	v.metadata.cameraCount = 0;
-	v.motions = [];
-	v.morphs = [];
-	v.cameras = [];
-
-	for ( var i = 0; i < vmds.length; i++ ) {
-
-		var v2 = vmds[ i ];
-
-		v.metadata.motionCount += v2.metadata.motionCount;
-		v.metadata.morphCount += v2.metadata.morphCount;
-		v.metadata.cameraCount += v2.metadata.cameraCount;
-
-		for ( var j = 0; j < v2.metadata.motionCount; j++ ) {
-
-			v.motions.push( v2.motions[ j ] );
-
-		}
-
-		for ( var j = 0; j < v2.metadata.morphCount; j++ ) {
-
-			v.morphs.push( v2.morphs[ j ] );
-
-		}
-
-		for ( var j = 0; j < v2.metadata.cameraCount; j++ ) {
-
-			v.cameras.push( v2.cameras[ j ] );
-
-		}
-
-	}
-
-	return v;
-
-};
-
-Parser.prototype.leftToRightModel = function ( model ) {
-
-	if ( model.metadata.coordinateSystem === 'right' ) {
-
-		return;
-
-	}
-
-	model.metadata.coordinateSystem = 'right';
-
-	var helper = new DataCreationHelper();
-
-	for ( var i = 0; i < model.metadata.vertexCount; i++ ) {
-
-		helper.leftToRightVector3( model.vertices[ i ].position );
-		helper.leftToRightVector3( model.vertices[ i ].normal );
-
-	}
-
-	for ( var i = 0; i < model.metadata.faceCount; i++ ) {
-
-		helper.leftToRightIndexOrder( model.faces[ i ].indices );
-
-	}
-
-	for ( var i = 0; i < model.metadata.boneCount; i++ ) {
-
-		helper.leftToRightVector3( model.bones[ i ].position );
-
-	}
-
-	// TODO: support other morph for PMX
-	for ( var i = 0; i < model.metadata.morphCount; i++ ) {
-
-		var m = model.morphs[ i ];
-
-		if ( model.metadata.format === 'pmx' && m.type !== 1 ) {
-
-			// TODO: implement
-			continue;
-
-		}
-
-		for ( var j = 0; j < m.elements.length; j++ ) {
-
-			helper.leftToRightVector3( m.elements[ j ].position );
-
-		}
-
-	}
-
-	for ( var i = 0; i < model.metadata.rigidBodyCount; i++ ) {
-
-		helper.leftToRightVector3( model.rigidBodies[ i ].position );
-		helper.leftToRightEuler( model.rigidBodies[ i ].rotation );
-
-	}
-
-	for ( var i = 0; i < model.metadata.constraintCount; i++ ) {
-
-		helper.leftToRightVector3( model.constraints[ i ].position );
-		helper.leftToRightEuler( model.constraints[ i ].rotation );
-		helper.leftToRightVector3Range( model.constraints[ i ].translationLimitation1, model.constraints[ i ].translationLimitation2 );
-		helper.leftToRightEulerRange( model.constraints[ i ].rotationLimitation1, model.constraints[ i ].rotationLimitation2 );
-
-	}
-
-};
-
-Parser.prototype.leftToRightVmd = function ( vmd ) {
-
-	if ( vmd.metadata.coordinateSystem === 'right' ) {
-
-		return;
-
-	}
-
-	vmd.metadata.coordinateSystem = 'right';
-
-	var helper = new DataCreationHelper();
-
-	for ( var i = 0; i < vmd.metadata.motionCount; i++ ) {
-
-		helper.leftToRightVector3( vmd.motions[ i ].position );
-		helper.leftToRightQuaternion( vmd.motions[ i ].rotation );
-
-	}
-
-	for ( var i = 0; i < vmd.metadata.cameraCount; i++ ) {
-
-		helper.leftToRightVector3( vmd.cameras[ i ].position );
-		helper.leftToRightEuler( vmd.cameras[ i ].rotation );
-
-	}
-
-};
-
-Parser.prototype.leftToRightVpd = function ( vpd ) {
-
-	if ( vpd.metadata.coordinateSystem === 'right' ) {
-
-		return;
-
-	}
-
-	vpd.metadata.coordinateSystem = 'right';
-
-	var helper = new DataCreationHelper();
-
-	for ( var i = 0; i < vpd.bones.length; i++ ) {
-
-		helper.leftToRightVector3( vpd.bones[ i ].translation );
-		helper.leftToRightQuaternion( vpd.bones[ i ].quaternion );
-
-	}
-
-};
+function readPmdFace(dv) {
+    return {
+        indices: dv.getUint16Array(3),
+    };
+}
+function readPmdMaterial(dv) {
+    return {
+        diffuse: dv.getFloat32Array(4),
+        shininess: dv.getFloat32(),
+        specular: dv.getFloat32Array(3),
+        ambient: dv.getFloat32Array(3),
+        toonIndex: dv.getInt8(),
+        edgeFlag: dv.getUint8(),
+        faceCount: dv.getUint32() / 3,
+        fileName: dv.getSjisStringsAsUnicode(20),
+    };
+}
+function readPmdBone(dv) {
+    return {
+        name: dv.getSjisStringsAsUnicode(20),
+        parentIndex: dv.getInt16(),
+        tailIndex: dv.getInt16(),
+        type: dv.getUint8(),
+        ikIndex: dv.getInt16(),
+        position: dv.getFloat32Array(3),
+    };
+}
+function readPmdRigidBody(dv) {
+    return {
+        name: dv.getSjisStringsAsUnicode(20),
+        boneIndex: dv.getInt16(),
+        groupIndex: dv.getUint8(),
+        groupTarget: dv.getUint16(),
+        shapeType: dv.getUint8(),
+        width: dv.getFloat32(),
+        height: dv.getFloat32(),
+        depth: dv.getFloat32(),
+        position: dv.getFloat32Array(3),
+        rotation: dv.getFloat32Array(3),
+        weight: dv.getFloat32(),
+        positionDamping: dv.getFloat32(),
+        rotationDamping: dv.getFloat32(),
+        restitution: dv.getFloat32(),
+        friction: dv.getFloat32(),
+        type: dv.getUint8(),
+    };
+}
+function readPmdConstraint(dv) {
+    return {
+        name: dv.getSjisStringsAsUnicode(20),
+        rigidBodyIndex1: dv.getUint32(),
+        rigidBodyIndex2: dv.getUint32(),
+        position: dv.getFloat32Array(3),
+        rotation: dv.getFloat32Array(3),
+        translationLimitation1: dv.getFloat32Array(3),
+        translationLimitation2: dv.getFloat32Array(3),
+        rotationLimitation1: dv.getFloat32Array(3),
+        rotationLimitation2: dv.getFloat32Array(3),
+        springPosition: dv.getFloat32Array(3),
+        springRotation: dv.getFloat32Array(3),
+    };
+}
+function readPmxFace(dv, metadata) {
+    return {
+        indices: dv.getIndexArray(metadata.vertexIndexSize, 3, true),
+    };
+}
+function readPmxRigidBody(dv, metadata) {
+    return {
+        name: dv.getTextBuffer(),
+        englishName: dv.getTextBuffer(),
+        boneIndex: dv.getIndex(metadata.boneIndexSize),
+        groupIndex: dv.getUint8(),
+        groupTarget: dv.getUint16(),
+        shapeType: dv.getUint8(),
+        width: dv.getFloat32(),
+        height: dv.getFloat32(),
+        depth: dv.getFloat32(),
+        position: dv.getFloat32Array(3),
+        rotation: dv.getFloat32Array(3),
+        weight: dv.getFloat32(),
+        positionDamping: dv.getFloat32(),
+        rotationDamping: dv.getFloat32(),
+        restitution: dv.getFloat32(),
+        friction: dv.getFloat32(),
+        type: dv.getUint8(),
+    };
+}
+function readPmxConstraint(dv, metadata) {
+    return {
+        name: dv.getTextBuffer(),
+        englishName: dv.getTextBuffer(),
+        type: dv.getUint8(),
+        rigidBodyIndex1: dv.getIndex(metadata.rigidBodyIndexSize),
+        rigidBodyIndex2: dv.getIndex(metadata.rigidBodyIndexSize),
+        position: dv.getFloat32Array(3),
+        rotation: dv.getFloat32Array(3),
+        translationLimitation1: dv.getFloat32Array(3),
+        translationLimitation2: dv.getFloat32Array(3),
+        rotationLimitation1: dv.getFloat32Array(3),
+        rotationLimitation2: dv.getFloat32Array(3),
+        springPosition: dv.getFloat32Array(3),
+        springRotation: dv.getFloat32Array(3),
+    };
+}
+function readVmdMotion(dv) {
+    return {
+        boneName: dv.getSjisStringsAsUnicode(15),
+        frameNum: dv.getUint32(),
+        position: dv.getFloat32Array(3),
+        rotation: dv.getFloat32Array(4),
+        interpolation: dv.getUint8Array(64),
+    };
+}
+function readVmdMorph(dv) {
+    return {
+        morphName: dv.getSjisStringsAsUnicode(15),
+        frameNum: dv.getUint32(),
+        weight: dv.getFloat32(),
+    };
+}
+function readVmdCamera(dv) {
+    return {
+        frameNum: dv.getUint32(),
+        distance: dv.getFloat32(),
+        position: dv.getFloat32Array(3),
+        rotation: dv.getFloat32Array(3),
+        interpolation: dv.getUint8Array(24),
+        fov: dv.getUint32(),
+        perspective: dv.getUint8(),
+    };
+}
+function readPmdVertex(dv) {
+    var position = dv.getFloat32Array(3);
+    var normal = dv.getFloat32Array(3);
+    var uv = dv.getFloat32Array(2);
+    var skinIndices = dv.getUint16Array(2);
+    var weight = dv.getUint8() / 100;
+    return { position: position, normal: normal, uv: uv, skinIndices: skinIndices, skinWeights: [weight, 1 - weight], edgeFlag: dv.getUint8() };
+}
+function readPmdIk(dv) {
+    var target = dv.getUint16();
+    var effector = dv.getUint16();
+    var linkCount = dv.getUint8();
+    var iteration = dv.getUint16();
+    var maxAngle = dv.getFloat32();
+    var links = readRecords(linkCount, function () { return ({ index: dv.getUint16() }); });
+    return { target: target, effector: effector, linkCount: linkCount, iteration: iteration, maxAngle: maxAngle, links: links };
+}
+function readPmdMorph(dv) {
+    var name = dv.getSjisStringsAsUnicode(20);
+    var elementCount = dv.getUint32();
+    var type = dv.getUint8();
+    var elements = readRecords(elementCount, function () { return ({ index: dv.getUint32(), position: dv.getFloat32Array(3) }); });
+    return { name: name, elementCount: elementCount, type: type, elements: elements };
+}
+function readPmxVertex(dv, metadata) {
+    var position = dv.getFloat32Array(3);
+    var normal = dv.getFloat32Array(3);
+    var uv = dv.getFloat32Array(2);
+    var auvs = readRecords(metadata.additionalUvNum, function () { return dv.getFloat32Array(4); });
+    var type = dv.getUint8();
+    var indexSize = metadata.boneIndexSize;
+    var base = { position: position, normal: normal, uv: uv, auvs: auvs };
+    var skinning;
+    switch (type) {
+        case 0:
+            skinning = { type: type, skinIndices: dv.getIndexArray(indexSize, 1), skinWeights: [1] };
+            break;
+        case 1: {
+            var skinIndices = dv.getIndexArray(indexSize, 2);
+            var weight = dv.getFloat32();
+            skinning = { type: type, skinIndices: skinIndices, skinWeights: [weight, 1 - weight] };
+            break;
+        }
+        case 2:
+            skinning = { type: type, skinIndices: dv.getIndexArray(indexSize, 4), skinWeights: dv.getFloat32Array(4) };
+            break;
+        case 3: {
+            var skinIndices = dv.getIndexArray(indexSize, 2);
+            var weight = dv.getFloat32();
+            // Preserve SDEF's existing BDEF2 fallback and the extra vectors.
+            var skinC = dv.getFloat32Array(3);
+            var skinR0 = dv.getFloat32Array(3);
+            var skinR1 = dv.getFloat32Array(3);
+            return __assign(__assign({}, base), { type: 1, skinIndices: skinIndices, skinWeights: [weight, 1 - weight], skinC: skinC, skinR0: skinR0, skinR1: skinR1, edgeRatio: dv.getFloat32() });
+        }
+        default:
+            throw 'unsupport bone type ' + type + ' exception.';
+    }
+    return __assign(__assign(__assign({}, base), skinning), { edgeRatio: dv.getFloat32() });
+}
+function readPmxMaterial(dv, metadata) {
+    var base = {
+        name: dv.getTextBuffer(), englishName: dv.getTextBuffer(),
+        diffuse: dv.getFloat32Array(4), specular: dv.getFloat32Array(3),
+        shininess: dv.getFloat32(), ambient: dv.getFloat32Array(3),
+        flag: dv.getUint8(), edgeColor: dv.getFloat32Array(4), edgeSize: dv.getFloat32(),
+        textureIndex: dv.getIndex(metadata.textureIndexSize),
+        envTextureIndex: dv.getIndex(metadata.textureIndexSize), envFlag: dv.getUint8()
+    };
+    var toonFlag = dv.getUint8();
+    var toonIndex;
+    if (toonFlag === 0)
+        toonIndex = dv.getIndex(metadata.textureIndexSize);
+    else if (toonFlag === 1)
+        toonIndex = dv.getInt8();
+    else
+        throw 'unknown toon flag ' + toonFlag + ' exception.';
+    return __assign(__assign({}, base), { toonFlag: toonFlag, toonIndex: toonIndex, comment: dv.getTextBuffer(), faceCount: dv.getUint32() / 3 });
+}
+function readPmxIkLink(dv, metadata) {
+    var index = dv.getIndex(metadata.boneIndexSize);
+    var angleLimitation = dv.getUint8();
+    if (angleLimitation === 1) {
+        return { index: index, angleLimitation: angleLimitation, lowerLimitationAngle: dv.getFloat32Array(3),
+            upperLimitationAngle: dv.getFloat32Array(3) };
+    }
+    return { index: index, angleLimitation: angleLimitation };
+}
+function readPmxIk(dv, metadata) {
+    var effector = dv.getIndex(metadata.boneIndexSize);
+    var iteration = dv.getUint32();
+    var maxAngle = dv.getFloat32();
+    var linkCount = dv.getUint32();
+    var links = readRecords(linkCount, function () { return readPmxIkLink(dv, metadata); });
+    return { effector: effector, target: null, iteration: iteration, maxAngle: maxAngle, linkCount: linkCount, links: links };
+}
+function readPmxBone(dv, metadata) {
+    var base = {
+        name: dv.getTextBuffer(), englishName: dv.getTextBuffer(), position: dv.getFloat32Array(3),
+        parentIndex: dv.getIndex(metadata.boneIndexSize), transformationClass: dv.getUint32(), flag: dv.getUint16()
+    };
+    var flag = base.flag;
+    var connection = (flag & 0x1)
+        ? { connectIndex: dv.getIndex(metadata.boneIndexSize) }
+        : { offsetPosition: dv.getFloat32Array(3) };
+    var grant = (flag & 0x100 || flag & 0x200) ? {
+        grant: {
+            isLocal: (flag & 0x80) !== 0, affectRotation: (flag & 0x100) !== 0,
+            affectPosition: (flag & 0x200) !== 0,
+            parentIndex: dv.getIndex(metadata.boneIndexSize), ratio: dv.getFloat32()
+        }
+    } : {};
+    var axis = (flag & 0x400) ? { fixAxis: dv.getFloat32Array(3) } : {};
+    var local = (flag & 0x800) ? { localXVector: dv.getFloat32Array(3), localZVector: dv.getFloat32Array(3) } : {};
+    var key = (flag & 0x2000) ? { key: dv.getUint32() } : {};
+    var ik = (flag & 0x20) ? { ik: readPmxIk(dv, metadata) } : {};
+    return __assign(__assign(__assign(__assign(__assign(__assign(__assign({}, base), connection), grant), axis), local), key), ik);
+}
+function readPmxMorph(dv, metadata) {
+    var name = dv.getTextBuffer();
+    var englishName = dv.getTextBuffer();
+    var panel = dv.getUint8();
+    var type = dv.getUint8();
+    var elementCount = dv.getUint32();
+    var base = { name: name, englishName: englishName, panel: panel, elementCount: elementCount };
+    switch (type) {
+        case 0:
+            return __assign(__assign({}, base), { type: type, elements: readRecords(elementCount, function () { return ({
+                    index: dv.getIndex(metadata.morphIndexSize), ratio: dv.getFloat32()
+                }); }) });
+        case 1:
+            return __assign(__assign({}, base), { type: type, elements: readRecords(elementCount, function () { return ({
+                    index: dv.getIndex(metadata.vertexIndexSize, true), position: dv.getFloat32Array(3)
+                }); }) });
+        case 2:
+            return __assign(__assign({}, base), { type: type, elements: readRecords(elementCount, function () { return ({
+                    index: dv.getIndex(metadata.boneIndexSize), position: dv.getFloat32Array(3), rotation: dv.getFloat32Array(4)
+                }); }) });
+        case 3:
+            return __assign(__assign({}, base), { type: type, elements: readRecords(elementCount, function () { return ({
+                    index: dv.getIndex(metadata.vertexIndexSize, true), uv: dv.getFloat32Array(4)
+                }); }) });
+        case 8:
+            return __assign(__assign({}, base), { type: type, elements: readRecords(elementCount, function () { return ({
+                    index: dv.getIndex(metadata.materialIndexSize), type: dv.getUint8(),
+                    diffuse: dv.getFloat32Array(4), specular: dv.getFloat32Array(3),
+                    shininess: dv.getFloat32(), ambient: dv.getFloat32Array(3),
+                    edgeColor: dv.getFloat32Array(4), edgeSize: dv.getFloat32(),
+                    textureColor: dv.getFloat32Array(4), sphereTextureColor: dv.getFloat32Array(4),
+                    toonColor: dv.getFloat32Array(4)
+                }); }) });
+        default:
+            // Additional UV and other unsupported morphs consume no element bytes,
+            // matching the existing parser; this migration does not add support.
+            return __assign(__assign({}, base), { type: type, elements: [] });
+    }
+}
+function readPmxFrame(dv, metadata) {
+    var name = dv.getTextBuffer();
+    var englishName = dv.getTextBuffer();
+    var type = dv.getUint8();
+    var elementCount = dv.getUint32();
+    var elements = readRecords(elementCount, function () {
+        var target = dv.getUint8();
+        var index = dv.getIndex(target === 0 ? metadata.boneIndexSize : metadata.morphIndexSize);
+        return { target: target, index: index };
+    });
+    return { name: name, englishName: englishName, type: type, elementCount: elementCount, elements: elements };
+}
+var Parser = /** @class */ (function () {
+    function Parser() {
+    }
+    Parser.prototype.parsePmd = function (buffer, leftToRight) {
+        var dv = new DataViewEx(buffer);
+        var magic = dv.getChars(3);
+        if (magic !== 'Pmd')
+            throw 'PMD file magic is not Pmd, but ' + magic;
+        var version = dv.getFloat32();
+        var modelName = dv.getSjisStringsAsUnicode(20);
+        var comment = dv.getSjisStringsAsUnicode(256);
+        var vertexCount = dv.getUint32();
+        var vertices = readRecords(vertexCount, function () { return readPmdVertex(dv); });
+        var faceCount = dv.getUint32() / 3;
+        var faces = readRecords(faceCount, function () { return readPmdFace(dv); });
+        var materialCount = dv.getUint32();
+        var materials = readRecords(materialCount, function () { return readPmdMaterial(dv); });
+        var boneCount = dv.getUint16();
+        var bones = readRecords(boneCount, function () { return readPmdBone(dv); });
+        var ikCount = dv.getUint16();
+        var iks = readRecords(ikCount, function () { return readPmdIk(dv); });
+        var morphCount = dv.getUint16();
+        var morphs = readRecords(morphCount, function () { return readPmdMorph(dv); });
+        var morphFrameCount = dv.getUint8();
+        var morphFrames = readRecords(morphFrameCount, function () { return ({ index: dv.getUint16() }); });
+        var boneFrameNameCount = dv.getUint8();
+        var boneFrameNames = readRecords(boneFrameNameCount, function () { return ({ name: dv.getSjisStringsAsUnicode(50) }); });
+        var boneFrameCount = dv.getUint32();
+        var boneFrames = readRecords(boneFrameCount, function () { return ({ boneIndex: dv.getInt16(), frameIndex: dv.getUint8() }); });
+        var englishCompatibility = dv.getUint8();
+        var englishHeader = englishCompatibility > 0
+            ? { englishModelName: dv.getSjisStringsAsUnicode(20), englishComment: dv.getSjisStringsAsUnicode(256) } : {};
+        var englishNames = englishCompatibility === 0 ? {} : {
+            englishBoneNames: readRecords(boneCount, function () { return ({ name: dv.getSjisStringsAsUnicode(20) }); }),
+            englishMorphNames: readRecords(morphCount - 1, function () { return ({ name: dv.getSjisStringsAsUnicode(20) }); }),
+            englishBoneFrameNames: readRecords(boneFrameNameCount, function () { return ({ name: dv.getSjisStringsAsUnicode(50) }); })
+        };
+        var toonTextures = readRecords(10, function () { return ({ fileName: dv.getSjisStringsAsUnicode(100) }); });
+        var rigidBodyCount = dv.getUint32();
+        var rigidBodies = readRecords(rigidBodyCount, function () { return readPmdRigidBody(dv); });
+        var constraintCount = dv.getUint32();
+        var constraints = readRecords(constraintCount, function () { return readPmdConstraint(dv); });
+        var metadata = __assign(__assign({ format: 'pmd', coordinateSystem: 'left', magic: magic, version: version, modelName: modelName, comment: comment, vertexCount: vertexCount, faceCount: faceCount, materialCount: materialCount, boneCount: boneCount, ikCount: ikCount, morphCount: morphCount, morphFrameCount: morphFrameCount, boneFrameNameCount: boneFrameNameCount, boneFrameCount: boneFrameCount, englishCompatibility: englishCompatibility }, englishHeader), { rigidBodyCount: rigidBodyCount, constraintCount: constraintCount });
+        var pmd = __assign(__assign({ metadata: metadata, vertices: vertices, faces: faces, materials: materials, bones: bones, iks: iks, morphs: morphs, morphFrames: morphFrames, boneFrameNames: boneFrameNames, boneFrames: boneFrames }, englishNames), { toonTextures: toonTextures, rigidBodies: rigidBodies, constraints: constraints });
+        if (leftToRight === true)
+            this.leftToRightModel(pmd);
+        return pmd;
+    };
+    Parser.prototype.parsePmx = function (buffer, leftToRight) {
+        var dv = new DataViewEx(buffer);
+        var magic = dv.getChars(4);
+        if (magic !== 'PMX ')
+            throw 'PMX file magic is not PMX , but ' + magic;
+        var version = dv.getFloat32();
+        if (version !== 2.0 && version !== 2.1)
+            throw 'PMX version ' + version + ' is not supported.';
+        var header = {
+            magic: magic,
+            version: version,
+            headerSize: dv.getUint8(), encoding: dv.getUint8(), additionalUvNum: dv.getUint8(),
+            vertexIndexSize: dv.getIndexSize(), textureIndexSize: dv.getIndexSize(),
+            materialIndexSize: dv.getIndexSize(), boneIndexSize: dv.getIndexSize(),
+            morphIndexSize: dv.getIndexSize(), rigidBodyIndexSize: dv.getIndexSize(),
+            modelName: dv.getTextBuffer(), englishModelName: dv.getTextBuffer(),
+            comment: dv.getTextBuffer(), englishComment: dv.getTextBuffer()
+        };
+        // Readers need only the header. Counts are collected as sections are read,
+        // then the complete metadata/result are constructed below.
+        var vertexCount = dv.getUint32();
+        var vertices = readRecords(vertexCount, function () { return readPmxVertex(dv, header); });
+        var faceCount = dv.getUint32() / 3;
+        var faces = readRecords(faceCount, function () { return readPmxFace(dv, header); });
+        var textureCount = dv.getUint32();
+        var textures = readRecords(textureCount, function () { return dv.getTextBuffer(); });
+        var materialCount = dv.getUint32();
+        var materials = readRecords(materialCount, function () { return readPmxMaterial(dv, header); });
+        var boneCount = dv.getUint32();
+        var bones = readRecords(boneCount, function () { return readPmxBone(dv, header); });
+        var morphCount = dv.getUint32();
+        var morphs = readRecords(morphCount, function () { return readPmxMorph(dv, header); });
+        var frameCount = dv.getUint32();
+        var frames = readRecords(frameCount, function () { return readPmxFrame(dv, header); });
+        var rigidBodyCount = dv.getUint32();
+        var rigidBodies = readRecords(rigidBodyCount, function () { return readPmxRigidBody(dv, header); });
+        var constraintCount = dv.getUint32();
+        var constraints = readRecords(constraintCount, function () { return readPmxConstraint(dv, header); });
+        var pmx = { metadata: __assign(__assign({ format: 'pmx', coordinateSystem: 'left' }, header), { vertexCount: vertexCount, faceCount: faceCount, textureCount: textureCount, materialCount: materialCount, boneCount: boneCount, morphCount: morphCount, frameCount: frameCount, rigidBodyCount: rigidBodyCount, constraintCount: constraintCount }), vertices: vertices, faces: faces, textures: textures, materials: materials, bones: bones, morphs: morphs, frames: frames, rigidBodies: rigidBodies, constraints: constraints };
+        if (leftToRight === true)
+            this.leftToRightModel(pmx);
+        return pmx;
+    };
+    Parser.prototype.parseVmd = function (buffer, leftToRight) {
+        var dv = new DataViewEx(buffer);
+        var magic = dv.getChars(30);
+        if (magic !== 'Vocaloid Motion Data 0002')
+            throw 'VMD file magic is not Vocaloid Motion Data 0002, but ' + magic;
+        var name = dv.getSjisStringsAsUnicode(20);
+        var motionCount = dv.getUint32();
+        var motions = readRecords(motionCount, function () { return readVmdMotion(dv); });
+        var morphCount = dv.getUint32();
+        var morphs = readRecords(morphCount, function () { return readVmdMorph(dv); });
+        var cameraCount = dv.getUint32();
+        var cameras = readRecords(cameraCount, function () { return readVmdCamera(dv); });
+        var vmd = { metadata: { coordinateSystem: 'left', magic: magic, name: name, motionCount: motionCount, morphCount: morphCount, cameraCount: cameraCount }, motions: motions, morphs: morphs, cameras: cameras };
+        if (leftToRight === true)
+            this.leftToRightVmd(vmd);
+        return vmd;
+    };
+    Parser.prototype.parseVpd = function (text, leftToRight) {
+        var commentPatternG = /\/\/\w*(\r|\n|\r\n)/g;
+        var lines = text.replace(commentPatternG, '').split(/\r|\n|\r\n/);
+        function throwError() { throw 'the file seems not vpd file.'; }
+        if (lines[0] !== 'Vocaloid Pose Data file' || lines.length < 4)
+            throwError();
+        var parentFile = at(lines, 2);
+        var boneCount = parseInt(at(lines, 3));
+        var boneHeaderPattern = /^\s*(Bone[0-9]+)\s*\{\s*(.*)$/;
+        var boneVectorPattern = /^\s*(-?[0-9]+\.[0-9]+)\s*,\s*(-?[0-9]+\.[0-9]+)\s*,\s*(-?[0-9]+\.[0-9]+)\s*;/;
+        var boneQuaternionPattern = /^\s*(-?[0-9]+\.[0-9]+)\s*,\s*(-?[0-9]+\.[0-9]+)\s*,\s*(-?[0-9]+\.[0-9]+)\s*,\s*(-?[0-9]+\.[0-9]+)\s*;/;
+        var boneFooterPattern = /^\s*}/;
+        var bones = [];
+        var name = null;
+        var translation = null;
+        var quaternion = null;
+        for (var i = 4; i < lines.length; i++) {
+            var line = at(lines, i);
+            var header = line.match(boneHeaderPattern);
+            if (header !== null) {
+                if (name !== null)
+                    throwError();
+                name = at(header, 2);
+            }
+            var vector = line.match(boneVectorPattern);
+            if (vector !== null) {
+                if (translation !== null)
+                    throwError();
+                translation = [parseFloat(at(vector, 1)), parseFloat(at(vector, 2)), parseFloat(at(vector, 3))];
+            }
+            var rotation = line.match(boneQuaternionPattern);
+            if (rotation !== null) {
+                if (quaternion !== null)
+                    throwError();
+                quaternion = [parseFloat(at(rotation, 1)), parseFloat(at(rotation, 2)),
+                    parseFloat(at(rotation, 3)), parseFloat(at(rotation, 4))];
+            }
+            if (line.match(boneFooterPattern) !== null) {
+                if (name === null || translation === null || quaternion === null)
+                    throwError();
+                bones.push({ name: name, translation: translation, quaternion: quaternion });
+                name = null;
+                translation = null;
+                quaternion = null;
+            }
+        }
+        if (name !== null || translation !== null || quaternion !== null)
+            throwError();
+        var vpd = { metadata: { coordinateSystem: 'left', parentFile: parentFile, boneCount: boneCount }, bones: bones };
+        if (leftToRight === true)
+            this.leftToRightVpd(vpd);
+        return vpd;
+    };
+    Parser.prototype.mergeVmds = function (vmds) {
+        var first = at(vmds, 0);
+        var v = { metadata: { name: first.metadata.name,
+                coordinateSystem: first.metadata.coordinateSystem, motionCount: 0, morphCount: 0, cameraCount: 0 },
+            motions: [], morphs: [], cameras: [] };
+        for (var _i = 0, vmds_1 = vmds; _i < vmds_1.length; _i++) {
+            var v2 = vmds_1[_i];
+            v.metadata.motionCount += v2.metadata.motionCount;
+            v.metadata.morphCount += v2.metadata.morphCount;
+            v.metadata.cameraCount += v2.metadata.cameraCount;
+            for (var j = 0; j < v2.metadata.motionCount; j++)
+                v.motions.push(at(v2.motions, j));
+            for (var j = 0; j < v2.metadata.morphCount; j++)
+                v.morphs.push(at(v2.morphs, j));
+            for (var j = 0; j < v2.metadata.cameraCount; j++)
+                v.cameras.push(at(v2.cameras, j));
+        }
+        return v;
+    };
+    Parser.prototype.leftToRightModel = function (model) {
+        if (model.metadata.coordinateSystem === 'right')
+            return;
+        model.metadata.coordinateSystem = 'right';
+        var helper = new DataCreationHelper();
+        for (var i = 0; i < model.metadata.vertexCount; i++) {
+            var vertex = at(model.vertices, i);
+            helper.leftToRightVector3(vertex.position);
+            helper.leftToRightVector3(vertex.normal);
+        }
+        for (var i = 0; i < model.metadata.faceCount; i++)
+            helper.leftToRightIndexOrder(at(model.faces, i).indices);
+        for (var i = 0; i < model.metadata.boneCount; i++)
+            helper.leftToRightVector3(at(model.bones, i).position);
+        // Preserve the existing conversion of only vertex morphs for PMX.
+        if (isPmxModel(model)) {
+            for (var i = 0; i < model.metadata.morphCount; i++) {
+                var morph = at(model.morphs, i);
+                if (morph.type === 1) {
+                    for (var _i = 0, _a = morph.elements; _i < _a.length; _i++) {
+                        var element = _a[_i];
+                        helper.leftToRightVector3(element.position);
+                    }
+                }
+            }
+        }
+        else {
+            for (var i = 0; i < model.metadata.morphCount; i++) {
+                for (var _b = 0, _c = at(model.morphs, i).elements; _b < _c.length; _b++) {
+                    var element = _c[_b];
+                    helper.leftToRightVector3(element.position);
+                }
+            }
+        }
+        for (var i = 0; i < model.metadata.rigidBodyCount; i++) {
+            var body = at(model.rigidBodies, i);
+            helper.leftToRightVector3(body.position);
+            helper.leftToRightEuler(body.rotation);
+        }
+        for (var i = 0; i < model.metadata.constraintCount; i++) {
+            var constraint = at(model.constraints, i);
+            helper.leftToRightVector3(constraint.position);
+            helper.leftToRightEuler(constraint.rotation);
+            helper.leftToRightVector3Range(constraint.translationLimitation1, constraint.translationLimitation2);
+            helper.leftToRightEulerRange(constraint.rotationLimitation1, constraint.rotationLimitation2);
+        }
+    };
+    Parser.prototype.leftToRightVmd = function (vmd) {
+        if (vmd.metadata.coordinateSystem === 'right')
+            return;
+        vmd.metadata.coordinateSystem = 'right';
+        var helper = new DataCreationHelper();
+        for (var i = 0; i < vmd.metadata.motionCount; i++) {
+            var motion = at(vmd.motions, i);
+            helper.leftToRightVector3(motion.position);
+            helper.leftToRightQuaternion(motion.rotation);
+        }
+        for (var i = 0; i < vmd.metadata.cameraCount; i++) {
+            var camera = at(vmd.cameras, i);
+            helper.leftToRightVector3(camera.position);
+            helper.leftToRightEuler(camera.rotation);
+        }
+    };
+    Parser.prototype.leftToRightVpd = function (vpd) {
+        if (vpd.metadata.coordinateSystem === 'right')
+            return;
+        vpd.metadata.coordinateSystem = 'right';
+        var helper = new DataCreationHelper();
+        for (var _i = 0, _a = vpd.bones; _i < _a.length; _i++) {
+            var bone = _a[_i];
+            helper.leftToRightVector3(bone.translation);
+            helper.leftToRightQuaternion(bone.quaternion);
+        }
+    };
+    return Parser;
+}());
+function isPmxModel(model) {
+    return model.metadata.format === 'pmx';
+}
 
 var MMDParser = {
-  CharsetEncoder: CharsetEncoder,
-  Parser: Parser
+    CharsetEncoder: CharsetEncoder,
+    Parser: Parser
 };
 
 export { MMDParser, CharsetEncoder, Parser };
