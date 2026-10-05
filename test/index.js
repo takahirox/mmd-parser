@@ -2,9 +2,9 @@ var MMDParser = require('../build/mmdparser');
 var CharsetEncoder = require('charset-encoder-js').CharsetEncoder;
 var parser = new MMDParser.Parser();
 var encoder = new CharsetEncoder();
-var pmdUrl = 'https://cdn.rawgit.com/mrdoob/three.js/dev/examples/models/mmd/miku/miku_v2.pmd';
-var vmdUrl = 'https://cdn.rawgit.com/mrdoob/three.js/dev/examples/models/mmd/vmds/wavefile_v2.vmd';
-var vpdUrl = 'https://cdn.rawgit.com/mrdoob/three.js/dev/examples/models/mmd/vpds/01.vpd';
+var pmdUrl = 'https://raw.githubusercontent.com/mrdoob/three.js/2898f5b1ba10b1e94174c0a62d072f5f7b80442c/examples/models/mmd/miku/miku_v2.pmd';
+var vmdUrl = 'https://raw.githubusercontent.com/mrdoob/three.js/2898f5b1ba10b1e94174c0a62d072f5f7b80442c/examples/models/mmd/vmds/wavefile_v2.vmd';
+var vpdUrl = 'https://raw.githubusercontent.com/mrdoob/three.js/2898f5b1ba10b1e94174c0a62d072f5f7b80442c/examples/models/mmd/vpds/01.vpd';
 var XMLHttpRequest = require('xhr2').XMLHttpRequest;
 
 function load (url, responseType, mimeType, onLoad, onProgress, onError) {

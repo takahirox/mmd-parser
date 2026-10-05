@@ -43,7 +43,7 @@ for review, merge, and Issue closure guidance for contributors and AI agents.
   function testPmd () {
     console.log('PMD parse test');
     load(
-      'https://cdn.rawgit.com/mrdoob/three.js/dev/examples/models/mmd/miku/miku_v2.pmd',
+      'https://raw.githubusercontent.com/mrdoob/three.js/2898f5b1ba10b1e94174c0a62d072f5f7b80442c/examples/models/mmd/miku/miku_v2.pmd',
       'arraybuffer',
       undefined,
       function (buffer) {
@@ -96,9 +96,12 @@ The offline tests use small synthetic PMD, PMX, VMD, and VPD fixtures with
 assertions against all three rebuilt bundles and a browser global smoke check.
 They cover the parser's currently supported sections; they do not establish
 support for additional PMX features. `npm test` retains the original sample
-smoke script, which downloads from `cdn.rawgit.com`. Those URLs may fail (including
-HTTP 404), and that script does not exercise PMX. `npm run all` runs the build,
-type checks, offline tests, and this network-dependent sample script in sequence.
+smoke script, which downloads real PMD, VMD, and VPD samples from
+`raw.githubusercontent.com`, pinned to Three.js r171 commit
+`2898f5b1ba10b1e94174c0a62d072f5f7b80442c`, as in
+[three-mmd-loader](https://github.com/takahirox/three-mmd-loader/blob/main/examples/README.md#assets-and-credits).
+It requires network access and does not exercise PMX. `npm run all` runs the
+build, type checks, offline tests, and this sample script in sequence.
 
 ### How to load
 ```
@@ -129,6 +132,20 @@ empty element arrays. Existing PMX text decoding and version checks are preserve
 
 
 ## Copyright
+
+The sample assets have separate terms and are not covered by this package's MIT
+license. Consult the pinned Three.js
+[asset license summary](https://github.com/mrdoob/three.js/blob/2898f5b1ba10b1e94174c0a62d072f5f7b80442c/examples/models/mmd/Readme.txt)
+and each author's original archive and notices before using them. Downloading
+these samples does not grant redistribution or commercial-use rights.
+
+- Miku v2 model: bundled MikuMikuDance model (MMD / Yu Higuchi), modeled by
+  Animasa; character © Crypton Future Media.
+  [Model notice](https://github.com/mrdoob/three.js/blob/2898f5b1ba10b1e94174c0a62d072f5f7b80442c/examples/models/mmd/miku/readme_miku_v2.txt).
+- WAVEFILE dance: hino.
+  [Motion notice](https://github.com/mrdoob/three.js/blob/2898f5b1ba10b1e94174c0a62d072f5f7b80442c/examples/models/mmd/vmds/readme_wavefile.txt).
+- Shooting poses: KEITEL.
+  [Pose notice](https://github.com/mrdoob/three.js/blob/2898f5b1ba10b1e94174c0a62d072f5f7b80442c/examples/models/mmd/vpds/readme.txt).
 
 You are allowed to use Crypton's Vocaloid(Hatsune Miku, Kagamine Rin, and so on)
 stuffs (MMD models, songs, and so on) only if you follow the guideline set by
