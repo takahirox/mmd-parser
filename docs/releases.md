@@ -16,21 +16,26 @@ npm run test:package
 git diff --check
 ```
 
-`npm run all` builds the UMD, minified UMD, ES module, and declarations, checks
-strict types, runs offline fixtures, and runs the network-dependent sample tests.
+`npm run all` builds the UMD, minified UMD, browser ES module, native ESM, and
+declarations, checks strict types, runs offline fixtures, and runs the
+network-dependent sample tests.
 The online smoke script logs metadata without assertions: inspect its output for
 successful PMD (`format: 'pmd'`), VMD (`motionCount: 14160`), and VPD
 (`boneCount: 93`) parses. A zero exit code with missing samples is not a pass.
 
 The package check packs the current build, validates every installed file, then
-checks CommonJS exports and parsing methods and strict TypeScript imports of
-`Parser`, `Pmd`, `Pmx`, `Vmd`, and `Vpd` in a clean temporary consumer outside the
-repository. It removes its temporary files even on failure. To check a specific
+checks CommonJS and native Node ESM exports and parsing methods and strict
+TypeScript imports of `Parser`, `Pmd`, `Pmx`, `Vmd`, and `Vpd` in a clean temporary
+consumer outside the repository, using legacy, Node16, NodeNext, and bundler
+resolution. It removes its temporary files even on failure. To check a specific
 tarball, use `npm run test:package -- /path/to/package.tgz`.
 
-Keep `package.json` at `1.1.0`, with its existing `main`, `jsnext:main`, `types`,
-and `files` entries. The allowlist distributes only runtime bundles and
-`build/types/`; npm also includes `package.json`, `Readme.md`, and `LICENSE`.
+Keep `package.json` at `1.1.0`, with its `main`, `jsnext:main`, `types`, conditional
+`exports`, and `files` entries. The root export selects the `.mjs` bundle and
+`.d.mts` declaration entry for imports, and the UMD bundle and `.d.ts` entry for
+CommonJS; existing browser bundle subpaths remain available. The allowlist
+distributes only runtime bundles and `build/types/`; npm also includes
+`package.json`, `Readme.md`, and `LICENSE`.
 Source, tests, scripts, workflow files, documentation guides, and intermediate
 build output are excluded. Keep dependency ranges unchanged and do not add an
 incidental lockfile.
@@ -132,8 +137,8 @@ npm run test:package -- "$registry_tmp/mmd-parser-1.1.0.tgz"
 
 The integrity must match the local pack output, and `cmp` must confirm identical
 tarballs. The consumer check installs the registry artifact in a clean temporary
-project and verifies its CommonJS runtime API and strict TypeScript declarations.
-Repository source cannot mask missing published files.
+project and verifies its CommonJS and native ESM runtime API and strict TypeScript
+declarations. Repository source cannot mask missing published files.
 
 ### 5. Tag the validated commit and record the result
 

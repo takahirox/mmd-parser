@@ -101,6 +101,7 @@ async function main() {
   check(require('../build/mmdparser.min.js'), 'minified UMD');
   var source = fs.readFileSync(path.join(__dirname, '../build/mmdparser.module.js'), 'utf8');
   check(await import('data:text/javascript;base64,' + Buffer.from(source).toString('base64')), 'ES module');
+  check(await import('../build/mmdparser.module.mjs'), 'native ESM');
   var context = { ArrayBuffer: ArrayBuffer, DataView: DataView, Uint8Array: Uint8Array, console: console };
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../build/mmdparser.js'), 'utf8'), context);
   assert.strictEqual(typeof context.MMDParser.Parser, 'function');

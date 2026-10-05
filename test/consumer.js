@@ -2,6 +2,7 @@ var assert = require('assert');
 var api = require('mmd-parser');
 var fixtures = require('./fixtures');
 
+assert(require.resolve('mmd-parser').endsWith(require('path').join('build', 'mmdparser.js')));
 assert.deepStrictEqual(Object.keys(api).sort(), ['CharsetEncoder', 'MMDParser', 'Parser']);
 assert.strictEqual(api.MMDParser.Parser, api.Parser);
 assert.strictEqual(api.MMDParser.CharsetEncoder, api.CharsetEncoder);

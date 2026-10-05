@@ -46,12 +46,12 @@ change unless they are explicitly in scope. The scripts in
 
 | Command | Behavior |
 | --- | --- |
-| `npm run build` | Compiles strict TypeScript from `index.ts` and `src/` into ignored `.typescript-tmp/compiled/`, runs Rollup to produce `build/mmdparser.js` (UMD) and `build/mmdparser.module.js` (ES module), and writes public declarations to `build/types/`. |
+| `npm run build` | Compiles strict TypeScript from `index.ts` and `src/` into ignored `.typescript-tmp/compiled/`, runs Rollup to produce `build/mmdparser.js` (UMD), `build/mmdparser.module.js` (browser ES module), and `build/mmdparser.module.mjs` (native ESM), and writes public declarations to `build/types/`. |
 | `npm run build-uglify` | Runs `build`, then UglifyJS to produce `build/mmdparser.min.js`. |
 | `npm test` | Runs `node test/index.js` against `build/mmdparser.js`. |
 | `npm run typecheck` | Checks the source under `strict` and `noUncheckedIndexedAccess`, then compile-only contracts against the generated public declarations. Rebuild after source changes. |
-| `npm run test:offline` | Runs assertions using local PMD/PMX/VMD/VPD fixtures against the UMD, minified UMD, and ES module bundles, plus a browser global smoke check. |
-| `npm run test:package` | Packs and inspects the npm package, installs it outside the repository, and checks CommonJS exports and strict TypeScript imports from the package root. Requires a completed build; optionally accepts an existing tarball path after `--`. |
+| `npm run test:offline` | Runs assertions using local PMD/PMX/VMD/VPD fixtures against the UMD, minified UMD, browser ES module, and native ESM bundles, plus a browser global smoke check. |
+| `npm run test:package` | Packs and inspects the npm package, installs it outside the repository, and checks CommonJS and native Node ESM exports and strict TypeScript imports using legacy, Node16, NodeNext, and bundler resolution from the package root. Requires a completed build; optionally accepts an existing tarball path after `--`. |
 | `npm run all` | Runs `build-uglify`, `typecheck`, `test:offline`, and the network-dependent `test` in sequence. |
 | `npm run dev` | Watches TypeScript, rebuilding bundles and declarations after successful compilations; it is not a completed validation check. |
 

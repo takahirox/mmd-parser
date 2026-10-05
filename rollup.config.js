@@ -20,6 +20,10 @@ export default {
     {
       format: 'es',
       dest: 'build/mmdparser.module.js'
+    },
+    {
+      format: 'es',
+      dest: 'build/mmdparser.module.mjs'
     }
   ]
 };

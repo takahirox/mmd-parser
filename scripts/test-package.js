@@ -36,6 +36,14 @@ try {
   assert.strictEqual(pkg.main, 'build/mmdparser.js');
   assert.strictEqual(pkg['jsnext:main'], 'build/mmdparser.module.js');
   assert.strictEqual(pkg.types, 'build/types/index.d.ts');
+  assert.deepStrictEqual(pkg.exports['.'], {
+    import: { types: './build/types/index.d.mts', default: './build/mmdparser.module.mjs' },
+    require: { types: './build/types/index.d.ts', default: './build/mmdparser.js' },
+    default: './build/mmdparser.js'
+  });
+  ['mmdparser.js', 'mmdparser.min.js', 'mmdparser.module.js', 'mmdparser.module.mjs'].forEach(function(file) {
+    assert.strictEqual(pkg.exports['./build/' + file], './build/' + file);
+  });
 
   var files = [];
   function inspect(directory, prefix) {
@@ -54,7 +62,8 @@ try {
   var required = [
     'package.json', 'LICENSE', 'Readme.md',
     'build/mmdparser.js', 'build/mmdparser.min.js', 'build/mmdparser.module.js',
-    'build/types/index.d.ts', 'build/types/src/Parser.d.ts',
+    'build/mmdparser.module.mjs',
+    'build/types/index.d.ts', 'build/types/index.d.mts', 'build/types/src/Parser.d.ts',
     'build/types/src/Types.d.ts', 'build/types/src/CharsetEncoder.d.ts',
     'build/types/src/charset-encoder-js.d.ts', 'build/types/src/DataViewEx.d.ts',
     'build/types/src/DataCreationHelper.d.ts'
@@ -67,16 +76,28 @@ try {
   });
   console.log('Package contents (' + files.length + ' files):\n' + files.sort().join('\n'));
 
-  ['consumer.js', 'consumer.ts', 'fixtures.js'].forEach(function(file) {
+  ['consumer.js', 'consumer.mjs', 'consumer.ts', 'fixtures.js'].forEach(function(file) {
     fs.copyFileSync(path.join(root, 'test', file), path.join(consumer, file));
   });
   execFileSync(process.execPath, ['consumer.js'], { cwd: consumer, stdio: 'inherit' });
-  execFileSync(process.execPath, [path.join(root, 'node_modules/typescript/bin/tsc'),
-    '--strict', '--noUncheckedIndexedAccess', '--noEmit', '--target', 'es2015',
-    '--module', 'commonjs', '--moduleResolution', 'node', 'consumer.ts'], {
-    cwd: consumer, stdio: 'inherit'
+  execFileSync(process.execPath, ['consumer.mjs'], { cwd: consumer, stdio: 'inherit' });
+
+  // The same type contracts must work with legacy and conditional resolution,
+  // including both Node module formats and modern browser bundlers.
+  ['consumer.cts', 'consumer.mts'].forEach(function(file) {
+    fs.copyFileSync(path.join(consumer, 'consumer.ts'), path.join(consumer, file));
   });
-  console.log('Packed package: CommonJS runtime and strict TypeScript consumer checks passed');
+  [
+    ['--module', 'commonjs', '--moduleResolution', 'node', 'consumer.ts'],
+    ['--module', 'node16', '--moduleResolution', 'node16', 'consumer.cts', 'consumer.mts'],
+    ['--module', 'nodenext', '--moduleResolution', 'nodenext', 'consumer.cts', 'consumer.mts'],
+    ['--module', 'esnext', '--moduleResolution', 'bundler', '--verbatimModuleSyntax', 'consumer.mts']
+  ].forEach(function(options) {
+    execFileSync(process.execPath, [path.join(root, 'node_modules/typescript/bin/tsc'),
+      '--strict', '--noUncheckedIndexedAccess', '--noEmit', '--target', 'es2015'
+    ].concat(options), { cwd: consumer, stdio: 'inherit' });
+  });
+  console.log('Packed package: CommonJS, native ESM, and strict TypeScript (node, node16, nodenext, bundler) checks passed');
 } finally {
   fs.rmSync(temporary, { recursive: true, force: true });
 }
