@@ -1,13 +1,13 @@
 # Release mmd-parser 1.1.0
 
-Issue [#9](https://github.com/takahirox/mmd-parser/issues/9) prepares the
-TypeScript-enabled package for release. Publication and registry verification
-happen after merge; neither npm account configuration nor publication is a
-pre-merge condition.
+Issue [#11](https://github.com/takahirox/mmd-parser/issues/11) simplifies this
+release to manual npm publication from the maintainer's local checkout.
+Publication, tagging, and registry verification are separate post-merge actions;
+do not publish or push a release tag while preparing this cleanup change.
 
 ## Validate before merge
 
-Use Node `24.12.0` and npm `11.6.2`, matching the release workflow:
+The release checks have been validated with Node `24.12.0` and npm `11.6.2`:
 
 ```sh
 npm install --no-package-lock --no-audit --no-fund
@@ -16,96 +16,144 @@ npm run test:package
 git diff --check
 ```
 
-The package check packs the current build, lists and validates every installed
-file, then installs that artifact in a clean temporary consumer. It checks the
-existing CommonJS exports and parsing methods, plus strict TypeScript imports of
-`Parser`, `Pmd`, `Pmx`, `Vmd`, and `Vpd` from `mmd-parser`, with no path aliases or
-local source imports. Temporary artifacts are removed even when a check fails.
-To test an already packed artifact, use `npm run test:package -- /path/to/package.tgz`.
+`npm run all` builds the UMD, minified UMD, ES module, and declarations, checks
+strict types, runs offline fixtures, and runs the network-dependent sample tests.
+The online smoke script logs metadata without assertions: inspect its output for
+successful PMD (`format: 'pmd'`), VMD (`motionCount: 14160`), and VPD
+(`boneCount: 93`) parses. A zero exit code with missing samples is not a pass.
 
-The `files` allowlist includes the UMD, minified UMD, ES module, and `build/types/`
-declarations. npm also includes `package.json`, `Readme.md`, and `LICENSE`.
+The package check packs the current build, validates every installed file, then
+checks CommonJS exports and parsing methods and strict TypeScript imports of
+`Parser`, `Pmd`, `Pmx`, `Vmd`, and `Vpd` in a clean temporary consumer outside the
+repository. It removes its temporary files even on failure. To check a specific
+tarball, use `npm run test:package -- /path/to/package.tgz`.
+
+Keep `package.json` at `1.1.0`, with its existing `main`, `jsnext:main`, `types`,
+and `files` entries. The allowlist distributes only runtime bundles and
+`build/types/`; npm also includes `package.json`, `Readme.md`, and `LICENSE`.
 Source, tests, scripts, workflow files, documentation guides, and intermediate
-build output are excluded. Existing dependency ranges and runtime entry points
-are preserved; installation does not introduce a lockfile.
+build output are excluded. Keep dependency ranges unchanged and do not add an
+incidental lockfile.
 
-## One-time npm Trusted Publisher configuration
+## Publish locally after merge
 
-A package maintainer must open the `mmd-parser` package's settings on npmjs.com
-and add a GitHub Actions Trusted Publisher with these exact values:
+Run the following steps in order in one shell. Stop if any check fails.
 
-| Setting | Value |
-| --- | --- |
-| Organization or user | `takahirox` |
-| Repository | `mmd-parser` |
-| Workflow filename | `publish.yml` (filename only; stored at `.github/workflows/publish.yml`) |
-| Environment name | Leave blank; the workflow uses no GitHub environment |
-| Allowed action | Enable direct publishing with `npm publish` |
+### 1. Update and validate master
 
-See [npm's Trusted Publishing documentation](https://docs.npmjs.com/trusted-publishers/).
-OIDC requires a GitHub-hosted runner, Node >= `22.14.0`, and npm >= `11.5.1`.
-New publisher configurations may only allow staged publishing by default, so
-enable `npm publish` for this workflow. GitHub OIDC publication automatically
-generates provenance for this public repository/package.
-
-The workflow uses only `contents: read` and, in the publish job, `id-token: write`.
-It needs no npm write secret or `NODE_AUTH_TOKEN`. Do not substitute a long-lived
-token if setup fails. If npm requests interactive account authentication or 2FA,
-record that the package maintainer must authenticate and save the exact Trusted
-Publisher configuration above. That is an external post-merge setup blocker.
-
-## Publish after merge
-
-1. Configure the Trusted Publisher above, if needed.
-2. On updated `master`, confirm the release change is merged and the package
-   version is `1.1.0`. Run the pre-merge validation commands again if the release
-   commit has changed.
-3. Create and push only the annotated tag `v1.1.0` on that merged commit:
-
-   ```sh
-   git switch master
-   git pull --ff-only
-   git tag -a v1.1.0 -m "Release mmd-parser 1.1.0"
-   git push origin v1.1.0
-   ```
-
-4. Watch the `Publish mmd-parser 1.1.0` run in GitHub Actions. Only the exact
-   `v1.1.0` tag triggers `.github/workflows/publish.yml`. It rejects a package
-   version mismatch, a different package name, or a commit outside `master`.
-   It runs `build-uglify`, strict `typecheck`, offline tests, and `npm test`.
-   Because the legacy online smoke script logs metadata, the workflow also
-   requires output confirming all PMD, VMD, and VPD samples parsed successfully.
-5. The workflow packs, inspects, and tests one tarball, then publishes that same
-   tarball as public `mmd-parser@1.1.0` with the `latest` dist-tag via OIDC.
-
-This workflow has no branch, manual, or wildcard tag trigger. Concurrent release
-runs are serialized. For a failed run, fix the reported cause and rerun only if
-`1.1.0` has not already been published. If publication succeeded but a later
-verification failed, perform verification instead of trying to republish the
-immutable version. Do not move the release tag or publish a different version
-under this procedure; a future release requires a reviewed workflow/version update.
-
-## Verify the published package
-
-After a successful run, confirm the registry version and provenance:
+Start with a clean local checkout, confirm the release cleanup is merged, and
+update `master`:
 
 ```sh
-npm view mmd-parser@1.1.0 version dist.integrity dist.attestations --registry=https://registry.npmjs.org
+git switch master
+git pull --ff-only
+git status --short
+node -e 'const p = require("./package.json"); if (p.name !== "mmd-parser" || p.version !== "1.1.0") throw new Error("Expected mmd-parser@1.1.0");'
+release_commit=$(git rev-parse HEAD)
 ```
 
-From this checkout with development dependencies installed, download the registry
-artifact and run the same isolated consumer check against it:
+`git status --short` must be empty. Repeat all commands in **Validate before
+merge** on this commit and inspect the online sample output. Then run
+`git status --short` again: it must still be empty, including generated bundles
+and declarations. If rebuilding changes tracked files, resolve and merge those
+changes before restarting this procedure. Record `release_commit`; it is the
+commit to tag after publication and verification succeed.
+
+### 2. Pack, inspect, and test the release artifact
+
+Keep the artifact outside the repository and use this exact tarball for both
+validation and publication:
 
 ```sh
 release_tmp=$(mktemp -d)
-npm pack mmd-parser@1.1.0 --pack-destination "$release_tmp" --registry=https://registry.npmjs.org
+npm pack --json --pack-destination "$release_tmp"
+tar -tzf "$release_tmp/mmd-parser-1.1.0.tgz"
 npm run test:package -- "$release_tmp/mmd-parser-1.1.0.tgz"
-rm -r "$release_tmp"
 ```
 
-The check installs the registry tarball in a clean temporary project and verifies
-its runtime API and declarations, so repository source cannot mask missing
-published files. Record the publish workflow run URL, registry result, and consumer
-check result on the merged PR or a follow-up Issue. If blocked, record the exact
-external configuration/authentication step remaining there. Pending post-merge
-results do not prevent pre-merge approval or source Issue closure.
+Inspect the pack output's name, version, file list, and integrity. The consumer
+check must pass for this tarball. Preserve it until registry verification is
+complete. Do not edit package files or rebuild after packing; if changes are
+needed, restart validation and packing on the updated, merged commit.
+
+### 3. Authenticate locally and publish the validated tarball
+
+Use the maintainer's npm account with publish access to `mmd-parser`. Check the
+current login and, if needed, log in from the home directory using the user
+configuration file outside the checkout:
+
+```sh
+npm whoami --userconfig "$HOME/.npmrc" --registry=https://registry.npmjs.org
+# Run only if login is needed; complete the browser authentication/2FA prompts.
+(cd "$HOME" && npm login --userconfig "$HOME/.npmrc" --registry=https://registry.npmjs.org)
+npm whoami --userconfig "$HOME/.npmrc" --registry=https://registry.npmjs.org
+```
+
+Keep npm authentication in the local user configuration (`$HOME/.npmrc`), which
+must be outside the repository. Never put tokens, credentials, or one-time codes
+in repository files, a project `.npmrc`, GitHub secrets, commits, or release
+evidence. Follow npm's [login documentation](https://docs.npmjs.com/cli/v11/commands/npm-login/)
+for interactive authentication.
+
+Before publishing, check whether the version already exists:
+
+```sh
+npm view mmd-parser@1.1.0 version --registry=https://registry.npmjs.org
+```
+
+Proceed only if the registry explicitly reports that `1.1.0` does not exist
+(`E404`). Resolve network or authentication errors before proceeding. If the
+version exists, skip publication and verify that registry artifact instead.
+
+Publish the validated tarball as public `mmd-parser@1.1.0` with the `latest` tag,
+completing npm's interactive authentication/2FA prompts as needed:
+
+```sh
+npm publish "$release_tmp/mmd-parser-1.1.0.tgz" --access public --tag latest --userconfig "$HOME/.npmrc" --registry=https://registry.npmjs.org
+```
+
+See [npm publish](https://docs.npmjs.com/cli/v11/commands/npm-publish/) for tarball
+publication. If the command fails or its outcome is unclear, check the registry
+before retrying. npm versions are immutable: if publication succeeded, continue
+verification rather than attempting to republish or changing the version.
+
+### 4. Verify the registry artifact
+
+Confirm the registry version is `1.1.0` and the `latest` dist-tag points to it:
+
+```sh
+npm view mmd-parser@1.1.0 version dist.integrity --registry=https://registry.npmjs.org
+npm view mmd-parser dist-tags.latest --registry=https://registry.npmjs.org
+registry_tmp=$(mktemp -d)
+npm pack mmd-parser@1.1.0 --pack-destination "$registry_tmp" --registry=https://registry.npmjs.org
+cmp "$release_tmp/mmd-parser-1.1.0.tgz" "$registry_tmp/mmd-parser-1.1.0.tgz"
+npm run test:package -- "$registry_tmp/mmd-parser-1.1.0.tgz"
+```
+
+The integrity must match the local pack output, and `cmp` must confirm identical
+tarballs. The consumer check installs the registry artifact in a clean temporary
+project and verifies its CommonJS runtime API and strict TypeScript declarations.
+Repository source cannot mask missing published files.
+
+### 5. Tag the validated commit and record the result
+
+After publication and registry verification succeed, create and push only the
+annotated release tag on the recorded commit:
+
+```sh
+git tag -a v1.1.0 "$release_commit" -m "Release mmd-parser 1.1.0"
+git push origin v1.1.0
+rm -r "$release_tmp" "$registry_tmp"
+```
+
+Tagging records the published source commit; it does not publish a package.
+If `v1.1.0` already exists locally or remotely, confirm it points to
+`release_commit` and do not move or force-push it. If a tag push fails after
+successful publication, finish tagging without publishing again.
+
+Record the release commit/tag, successful publication, registry version/integrity,
+and runtime/TypeScript consumer results on the merged PR. If publication or
+verification finds a problem, preserve the artifact and evidence and create a
+focused follow-up Issue describing the problem and remaining work. Do not add
+the `Task` label to that Issue; triage it separately. Pending post-merge results
+do not prevent pre-merge approval or source Issue closure.

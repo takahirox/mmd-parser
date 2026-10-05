@@ -8,7 +8,7 @@ See the [development flow](docs/development-flow.md) for Issue authoring, build 
 test commands, and PR preparation, and the [review guidelines](docs/review-guidelines.md)
 for review, merge, and Issue closure guidance for contributors and AI agents.
 See the [release procedure](docs/releases.md) for publishing `mmd-parser@1.1.0`
-through GitHub Actions and npm Trusted Publishing.
+manually from a local checkout with the maintainer's npm authentication.
 
 
 ## Browser
