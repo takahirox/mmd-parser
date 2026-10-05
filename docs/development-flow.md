@@ -27,7 +27,7 @@ routine human-only or post-merge checks to every Issue.
 1. Read the Issue, repository instructions, and relevant source and tests. Work
    from the selected upstream commit; for a manual contribution, start from
    current `master` on a working branch.
-2. Keep changes within the Issue. The public exports are in `index.js`; parser
+2. Keep changes within the Issue. The public exports are in `index.ts`; parser
    code is in `src/`, distributed bundles in `build/`, the existing test script in
    `test/index.js`, and browser usage in `index.html` and `Readme.md`.
 3. For parser changes, consider affected PMD, PMX, VMD, and VPD behavior, character
@@ -44,18 +44,25 @@ Install existing dependencies with `npm install`, as documented in
 change unless they are explicitly in scope. The scripts in
 [package.json](../package.json) are:
 
-| Command | Existing behavior |
+| Command | Behavior |
 | --- | --- |
-| `npm run build` | Runs `rollup -c`, producing `build/mmdparser.js` (UMD) and `build/mmdparser.module.js` (ES module) from `index.js`. |
-| `npm run build-uglify` | Runs Rollup again, then UglifyJS to produce `build/mmdparser.min.js`. |
+| `npm run build` | Compiles strict TypeScript from `index.ts` and `src/` into ignored `.typescript-tmp/compiled/`, runs Rollup to produce `build/mmdparser.js` (UMD) and `build/mmdparser.module.js` (ES module), and writes public declarations to `build/types/`. |
+| `npm run build-uglify` | Runs `build`, then UglifyJS to produce `build/mmdparser.min.js`. |
 | `npm test` | Runs `node test/index.js` against `build/mmdparser.js`. |
-| `npm run all` | Runs `build`, `build-uglify`, and `test` in sequence. |
-| `npm run dev` | Runs Rollup in watch mode for development; it is not a completed validation check. |
+| `npm run typecheck` | Checks the source under `strict` and `noUncheckedIndexedAccess`, then compile-only contracts against the generated public declarations. Rebuild after source changes. |
+| `npm run test:offline` | Runs assertions using local PMD/PMX/VMD/VPD fixtures against the UMD, minified UMD, and ES module bundles, plus a browser global smoke check. |
+| `npm run all` | Runs `build-uglify`, `typecheck`, `test:offline`, and the network-dependent `test` in sequence. |
+| `npm run dev` | Watches TypeScript, rebuilding bundles and declarations after successful compilations; it is not a completed validation check. |
 
-For source or distributed-bundle changes, run the applicable builds and `npm test`
+For source or distributed-bundle changes, run the applicable builds,
+`npm run typecheck`, `npm run test:offline`, and `npm test`
 (or `npm run all` for the full sequence). Tests read the built bundle, so rebuild
 after editing source. Review regenerated bundles and include them when needed for
-the change, since `package.json` points consumers to `build/`.
+the change, since `package.json` points consumers to `build/`, including its
+TypeScript declarations. The local `src/charset-encoder-js.d.ts` declaration
+keeps the untyped charset dependency from propagating untyped values into source
+or consumer declarations. Keep parser records complete at construction and
+use fixed-length reader overloads rather than assertions for ordinary data.
 
 The current test script downloads PMD, VMD, and VPD samples from external
 `cdn.rawgit.com` URLs and logs parsed metadata; it has no assertions and does not

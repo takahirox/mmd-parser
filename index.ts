@@ -8,3 +8,4 @@ var MMDParser = {
 
 export { MMDParser, CharsetEncoder, Parser };
 
+export type * from './src/Types';

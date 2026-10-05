@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "module": "es2015",
+    "moduleResolution": "node",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "declaration": true,
+    "outDir": ".typescript-tmp/compiled",
+    "lib": [
+      "es2015",
+      "dom"
+    ],
+    "noEmitOnError": true
+  },
+  "include": [
+    "index.ts",
+    "src/**/*.ts"
+  ]
+}
