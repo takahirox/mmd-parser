@@ -65,11 +65,13 @@ or consumer declarations. Keep parser records complete at construction and
 use fixed-length reader overloads rather than assertions for ordinary data.
 
 The current test script downloads PMD, VMD, and VPD samples from external
-`cdn.rawgit.com` URLs and logs parsed metadata; it has no assertions and does not
-exercise PMX. Inspect output to confirm samples actually loaded and parsed. An
-exit code alone does not demonstrate parser correctness. Report download failures
-or missing coverage accurately, and use focused checks with shareable inputs when
-needed for the Issue. Do not silently treat unavailable samples as passing tests.
+`raw.githubusercontent.com` URLs pinned to Three.js r171 commit
+`2898f5b1ba10b1e94174c0a62d072f5f7b80442c` and logs parsed metadata; it has no
+assertions and does not exercise PMX. Inspect output to confirm samples actually
+loaded and parsed. An exit code alone does not demonstrate parser correctness.
+Report download failures or missing coverage accurately, and use focused checks
+with shareable inputs when needed for the Issue. Do not silently treat
+unavailable samples as passing tests.
 
 For documentation-only changes, check template front matter, Markdown syntax,
 relative links, command names, and consistency across the templates and guides.
