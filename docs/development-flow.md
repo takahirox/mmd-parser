@@ -51,6 +51,7 @@ change unless they are explicitly in scope. The scripts in
 | `npm test` | Runs `node test/index.js` against `build/mmdparser.js`. |
 | `npm run typecheck` | Checks the source under `strict` and `noUncheckedIndexedAccess`, then compile-only contracts against the generated public declarations. Rebuild after source changes. |
 | `npm run test:offline` | Runs assertions using local PMD/PMX/VMD/VPD fixtures against the UMD, minified UMD, and ES module bundles, plus a browser global smoke check. |
+| `npm run test:package` | Packs and inspects the npm package, installs it outside the repository, and checks CommonJS exports and strict TypeScript imports from the package root. Requires a completed build; optionally accepts an existing tarball path after `--`. |
 | `npm run all` | Runs `build-uglify`, `typecheck`, `test:offline`, and the network-dependent `test` in sequence. |
 | `npm run dev` | Watches TypeScript, rebuilding bundles and declarations after successful compilations; it is not a completed validation check. |
 
@@ -72,6 +73,10 @@ loaded and parsed. An exit code alone does not demonstrate parser correctness.
 Report download failures or missing coverage accurately, and use focused checks
 with shareable inputs when needed for the Issue. Do not silently treat
 unavailable samples as passing tests.
+
+For release changes, also run `npm run test:package` after building. Follow the
+[release procedure](releases.md) for the exact tag, publishing workflow, npm
+Trusted Publisher configuration, and required post-merge registry checks.
 
 For documentation-only changes, check template front matter, Markdown syntax,
 relative links, command names, and consistency across the templates and guides.

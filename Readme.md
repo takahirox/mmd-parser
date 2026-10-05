@@ -7,6 +7,8 @@ mmd-parser parses MMD ArrayBuffer/Strings and generates Object.
 See the [development flow](docs/development-flow.md) for Issue authoring, build and
 test commands, and PR preparation, and the [review guidelines](docs/review-guidelines.md)
 for review, merge, and Issue closure guidance for contributors and AI agents.
+See the [release procedure](docs/releases.md) for publishing `mmd-parser@1.1.0`
+through GitHub Actions and npm Trusted Publishing.
 
 
 ## Browser
@@ -102,6 +104,11 @@ smoke script, which downloads real PMD, VMD, and VPD samples from
 [three-mmd-loader](https://github.com/takahirox/three-mmd-loader/blob/main/examples/README.md#assets-and-credits).
 It requires network access and does not exercise PMX. `npm run all` runs the
 build, type checks, offline tests, and this sample script in sequence.
+
+After building, `npm run test:package` packs and inspects the npm artifact, installs
+it in a temporary consumer outside the repository, and checks CommonJS runtime
+exports and strict TypeScript imports from `mmd-parser`. Only runtime bundles,
+declarations, package metadata, the README, and the license are distributed.
 
 ### How to load
 ```
