@@ -32,7 +32,7 @@ try {
   var installed = path.join(consumer, 'node_modules', 'mmd-parser');
   var pkg = JSON.parse(fs.readFileSync(path.join(installed, 'package.json'), 'utf8'));
   assert.strictEqual(pkg.name, 'mmd-parser');
-  assert.strictEqual(pkg.version, '1.1.1');
+  assert.strictEqual(pkg.version, '1.1.2');
   assert.strictEqual(pkg.main, 'build/mmdparser.js');
   assert.strictEqual(pkg['jsnext:main'], 'build/mmdparser.module.js');
   assert.strictEqual(pkg.types, 'build/types/index.d.ts');
@@ -76,7 +76,7 @@ try {
   });
   console.log('Package contents (' + files.length + ' files):\n' + files.sort().join('\n'));
 
-  ['consumer.js', 'consumer.mjs', 'consumer.ts', 'fixtures.js'].forEach(function(file) {
+  ['consumer.js', 'consumer.mjs', 'consumer.ts', 'consumer-pmx.js', 'fixtures.js'].forEach(function(file) {
     fs.copyFileSync(path.join(root, 'test', file), path.join(consumer, file));
   });
   execFileSync(process.execPath, ['consumer.js'], { cwd: consumer, stdio: 'inherit' });

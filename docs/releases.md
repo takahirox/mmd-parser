@@ -1,17 +1,23 @@
-# Release mmd-parser 1.1.1
+# Release mmd-parser 1.1.2
 
-Issue [#15](https://github.com/takahirox/mmd-parser/issues/15) prepares this release
+Issue [#19](https://github.com/takahirox/mmd-parser/issues/19) prepares this release
 for manual publication of an already validated tarball. All preparation and
 package checks happen before merge, without npm credentials. Authentication,
 publication, registry verification, and tagging are separate maintainer-only
 follow-up actions. Required post-merge verification for Issue completion: **None**.
-Do not publish or create/push `v1.1.1` during repository preparation.
+Do not publish or create/push `v1.1.2` during repository preparation.
 
 ## Prepare and validate before merge
 
+This release includes the PMX additional UV morph parsing fix from
+Issue [#17](https://github.com/takahirox/mmd-parser/issues/17) /
+PR [#18](https://github.com/takahirox/mmd-parser/pull/18). Morph types 4–7 consume
+their vertex indices and four UV offsets, preserving alignment of following
+sections. No further parser behavior changes are part of release preparation.
+
 The release checks have been validated with Node `24.12.0` and npm `11.6.2`.
 
-See the [1.1.1 preparation evidence](release-1.1.1-validation.md) for the retained
+See the [1.1.2 preparation evidence](release-1.1.2-validation.md) for the retained
 artifact path, checksums, successful checks, and exact manual publish command.
 
 Run the following preparation checks:
@@ -37,10 +43,12 @@ The package check packs the current build, validates every installed file, then
 checks CommonJS and native Node ESM exports and parsing methods and strict
 TypeScript imports of `Parser`, `Pmd`, `Pmx`, `Vmd`, and `Vpd` in a clean temporary
 consumer outside the repository, using legacy, Node16, NodeNext, and bundler
-resolution. It removes its temporary files even on failure. To check a specific
-tarball, use `npm run test:package -- /path/to/package.tgz`.
+resolution. Both runtime consumers also assert the additional UV morph fix for
+types 4–7 with 1-, 2-, and 4-byte vertex indices in both coordinate modes,
+including the following vertex morph and display frame. It removes its temporary
+files even on failure. To check a specific tarball, use `npm run test:package -- /path/to/package.tgz`.
 
-Keep `package.json` at `1.1.1`, with its `main`, `jsnext:main`, `types`, conditional
+Keep `package.json` at `1.1.2`, with its `main`, `jsnext:main`, `types`, conditional
 `exports`, and `files` entries. The root export selects the `.mjs` bundle and
 `.d.mts` declaration entry for imports, and the UMD bundle and `.d.ts` entry for
 CommonJS; existing browser bundle subpaths remain available. The allowlist
@@ -56,17 +64,17 @@ After the checks above pass, pack outside the repository, inspect the file list,
 and test this exact tarball in the isolated consumer:
 
 ```sh
-release_tmp=$(mktemp -d "${TMPDIR:-/tmp}/mmd-parser-1.1.1-release.XXXXXX")
-release_tarball="$release_tmp/mmd-parser-1.1.1.tgz"
+release_tmp=$(mktemp -d "${TMPDIR:-/tmp}/mmd-parser-1.1.2-release.XXXXXX")
+release_tarball="$release_tmp/mmd-parser-1.1.2.tgz"
 npm pack --json --pack-destination "$release_tmp"
 tar -tzf "$release_tarball"
 npm run test:package -- "$release_tarball"
-(cd "$release_tmp" && shasum -a 256 mmd-parser-1.1.1.tgz > SHA256SUMS)
+(cd "$release_tmp" && shasum -a 256 mmd-parser-1.1.2.tgz > SHA256SUMS)
 git diff --check
 git status --short
 ```
 
-Inspect the pack output's name (`mmd-parser`), version (`1.1.1`), file list,
+Inspect the pack output's name (`mmd-parser`), version (`1.1.2`), file list,
 and integrity. Include any changed tracked bundles and declarations in the
 preparation commit. The consumer check must pass for this tarball. Record the
 validation results, source revision, absolute artifact path, SHA-256, and npm
@@ -98,11 +106,11 @@ is merged, and record the commit to tag after successful publication:
 git switch master
 git pull --ff-only
 git status --short
-node -e 'const p = require("./package.json"); if (p.name !== "mmd-parser" || p.version !== "1.1.1") throw new Error("Expected mmd-parser@1.1.1");'
+node -e 'const p = require("./package.json"); if (p.name !== "mmd-parser" || p.version !== "1.1.2") throw new Error("Expected mmd-parser@1.1.2");'
 release_commit=$(git rev-parse HEAD)
 # Replace this path with the retained directory from the preparation evidence.
 release_tmp=/absolute/path/to/validated-release
-release_tarball="$release_tmp/mmd-parser-1.1.1.tgz"
+release_tarball="$release_tmp/mmd-parser-1.1.2.tgz"
 (cd "$release_tmp" && shasum -a 256 -c SHA256SUMS)
 ```
 
@@ -134,14 +142,14 @@ for interactive authentication.
 Before publishing, check whether the version already exists:
 
 ```sh
-npm view mmd-parser@1.1.1 version --registry=https://registry.npmjs.org
+npm view mmd-parser@1.1.2 version --registry=https://registry.npmjs.org
 ```
 
-Proceed only if the registry explicitly reports that `1.1.1` does not exist
+Proceed only if the registry explicitly reports that `1.1.2` does not exist
 (`E404`). Resolve network or authentication errors before proceeding. If the
 version exists, skip publication and verify that registry artifact instead.
 
-Publish the validated tarball as public `mmd-parser@1.1.1` with the `latest` tag,
+Publish the validated tarball as public `mmd-parser@1.1.2` with the `latest` tag,
 completing npm's interactive authentication/2FA prompts as needed:
 
 ```sh
@@ -155,15 +163,15 @@ verification rather than attempting to republish or changing the version.
 
 ### 3. Verify the registry artifact
 
-Confirm the registry version is `1.1.1` and the `latest` dist-tag points to it:
+Confirm the registry version is `1.1.2` and the `latest` dist-tag points to it:
 
 ```sh
-npm view mmd-parser@1.1.1 version dist.integrity --registry=https://registry.npmjs.org
+npm view mmd-parser@1.1.2 version dist.integrity --registry=https://registry.npmjs.org
 npm view mmd-parser dist-tags.latest --registry=https://registry.npmjs.org
 registry_tmp=$(mktemp -d)
-npm pack mmd-parser@1.1.1 --pack-destination "$registry_tmp" --registry=https://registry.npmjs.org
-cmp "$release_tarball" "$registry_tmp/mmd-parser-1.1.1.tgz"
-npm run test:package -- "$registry_tmp/mmd-parser-1.1.1.tgz"
+npm pack mmd-parser@1.1.2 --pack-destination "$registry_tmp" --registry=https://registry.npmjs.org
+cmp "$release_tarball" "$registry_tmp/mmd-parser-1.1.2.tgz"
+npm run test:package -- "$registry_tmp/mmd-parser-1.1.2.tgz"
 ```
 
 The integrity must match the local pack output, and `cmp` must confirm identical
@@ -177,13 +185,13 @@ After publication and registry verification succeed, create and push only the
 annotated release tag on the recorded commit:
 
 ```sh
-git tag -a v1.1.1 "$release_commit" -m "Release mmd-parser 1.1.1"
-git push origin v1.1.1
+git tag -a v1.1.2 "$release_commit" -m "Release mmd-parser 1.1.2"
+git push origin v1.1.2
 rm -r "$release_tmp" "$registry_tmp"
 ```
 
 Tagging records the published source commit; it does not publish a package.
-If `v1.1.1` already exists locally or remotely, confirm it points to
+If `v1.1.2` already exists locally or remotely, confirm it points to
 `release_commit` and do not move or force-push it. If a tag push fails after
 successful publication, finish tagging without publishing again.
 
