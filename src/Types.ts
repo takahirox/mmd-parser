@@ -121,6 +121,10 @@ export type PmxMorph = PmxMorphBase & (
   | { type: 1; elements: VertexMorphElement[] }
   | { type: 2; elements: BoneMorphElement[] }
   | { type: 3; elements: { index: number; uv: Vector4 }[] }
+  | { type: 4; elements: { index: number; uv: Vector4 }[] }
+  | { type: 5; elements: { index: number; uv: Vector4 }[] }
+  | { type: 6; elements: { index: number; uv: Vector4 }[] }
+  | { type: 7; elements: { index: number; uv: Vector4 }[] }
   | { type: 8; elements: MaterialMorphElement[] }
   // Unsupported morphs retain their numeric type and produce no elements.
   | { type: number; elements: [] }

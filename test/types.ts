@@ -1,6 +1,6 @@
 // Compile-only contracts: each expected error must actually be rejected by tsc.
 import { MMDParser, Parser, CharsetEncoder } from '..';
-import type { Pmd, Pmx, Vmd, Vpd, PmxVertex, PmxMorph, Vector2, Vector3, Quaternion, IndexSize } from '..';
+import type { Pmd, Pmx, Vmd, Vpd, PmxVertex, PmxMorph, Vector2, Vector3, Vector4, Quaternion, IndexSize } from '..';
 import { DataViewEx } from '../build/types/src/DataViewEx';
 
 const parser: Parser = new MMDParser.Parser();
@@ -41,6 +41,30 @@ function morphPosition(morph: PmxMorph): Vector3 | undefined {
 const morph: PmxMorph = { name: '', englishName: '', panel: 0, elementCount: 1,
   type: 1, elements: [{ index: 0, position }] };
 morphPosition(morph);
+
+// Each additional-UV discriminator exposes non-empty four-component offsets.
+const additionalUv4: Extract<PmxMorph, { type: 4 }> = { ...morph, type: 4, elements: [{ index: 0, uv: quaternion }] };
+const additionalUv5: Extract<PmxMorph, { type: 5 }> = { ...morph, type: 5, elements: [{ index: 0, uv: quaternion }] };
+const additionalUv6: Extract<PmxMorph, { type: 6 }> = { ...morph, type: 6, elements: [{ index: 0, uv: quaternion }] };
+const additionalUv7: Extract<PmxMorph, { type: 7 }> = { ...morph, type: 7, elements: [{ index: 0, uv: quaternion }] };
+function morphUv(morph: PmxMorph): Vector4 | undefined {
+  switch (morph.type) {
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+    case 7:
+      for (const element of morph.elements) return element.uv;
+  }
+  return undefined;
+}
+[additionalUv4, additionalUv5, additionalUv6, additionalUv7].forEach(morphUv);
+// @ts-expect-error Additional UV offsets have four components, not three.
+const shortMorphUv: PmxMorph = { ...morph, type: 4, elements: [{ index: 0, uv: position }] };
+// @ts-expect-error Additional UV morph elements require UV offsets, not positions.
+const wrongAdditionalUv: PmxMorph = { ...morph, type: 7, elements: [{ index: 0, position }] };
+// @ts-expect-error Each additional UV variant preserves its numeric discriminator.
+const wrongUvType: Extract<PmxMorph, { type: 4 }> = additionalUv5;
 
 // @ts-expect-error A model result must include all of its sections.
 const incomplete: Pmd = { metadata: pmd.metadata, vertices: [] };
