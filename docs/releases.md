@@ -1,17 +1,27 @@
-# Release mmd-parser 1.1.0
+# Release mmd-parser 1.1.1
 
-Issue [#11](https://github.com/takahirox/mmd-parser/issues/11) simplifies this
-release to manual npm publication from the maintainer's local checkout.
-Publication, tagging, and registry verification are separate post-merge actions;
-do not publish or push a release tag while preparing this cleanup change.
+Issue [#15](https://github.com/takahirox/mmd-parser/issues/15) prepares this release
+for manual publication of an already validated tarball. All preparation and
+package checks happen before merge, without npm credentials. Authentication,
+publication, registry verification, and tagging are separate maintainer-only
+follow-up actions. Required post-merge verification for Issue completion: **None**.
+Do not publish or create/push `v1.1.1` during repository preparation.
 
-## Validate before merge
+## Prepare and validate before merge
 
-The release checks have been validated with Node `24.12.0` and npm `11.6.2`:
+The release checks have been validated with Node `24.12.0` and npm `11.6.2`.
+
+See the [1.1.1 preparation evidence](release-1.1.1-validation.md) for the retained
+artifact path, checksums, successful checks, and exact manual publish command.
+
+Run the following preparation checks:
 
 ```sh
 npm install --no-package-lock --no-audit --no-fund
-npm run all
+npm run build-uglify
+npm run typecheck
+npm run test:offline
+npm test
 npm run test:package
 git diff --check
 ```
@@ -30,7 +40,7 @@ consumer outside the repository, using legacy, Node16, NodeNext, and bundler
 resolution. It removes its temporary files even on failure. To check a specific
 tarball, use `npm run test:package -- /path/to/package.tgz`.
 
-Keep `package.json` at `1.1.0`, with its `main`, `jsnext:main`, `types`, conditional
+Keep `package.json` at `1.1.1`, with its `main`, `jsnext:main`, `types`, conditional
 `exports`, and `files` entries. The root export selects the `.mjs` bundle and
 `.d.mts` declaration entry for imports, and the UMD bundle and `.d.ts` entry for
 CommonJS; existing browser bundle subpaths remain available. The allowlist
@@ -40,48 +50,69 @@ Source, tests, scripts, workflow files, documentation guides, and intermediate
 build output are excluded. Keep dependency ranges unchanged and do not add an
 incidental lockfile.
 
-## Publish locally after merge
+### Pack and retain the exact release artifact
 
-Run the following steps in order in one shell. Stop if any check fails.
+After the checks above pass, pack outside the repository, inspect the file list,
+and test this exact tarball in the isolated consumer:
 
-### 1. Update and validate master
+```sh
+release_tmp=$(mktemp -d "${TMPDIR:-/tmp}/mmd-parser-1.1.1-release.XXXXXX")
+release_tarball="$release_tmp/mmd-parser-1.1.1.tgz"
+npm pack --json --pack-destination "$release_tmp"
+tar -tzf "$release_tarball"
+npm run test:package -- "$release_tarball"
+(cd "$release_tmp" && shasum -a 256 mmd-parser-1.1.1.tgz > SHA256SUMS)
+git diff --check
+git status --short
+```
 
-Start with a clean local checkout, confirm the release cleanup is merged, and
-update `master`:
+Inspect the pack output's name (`mmd-parser`), version (`1.1.1`), file list,
+and integrity. Include any changed tracked bundles and declarations in the
+preparation commit. The consumer check must pass for this tarball. Record the
+validation results, source revision, absolute artifact path, SHA-256, and npm
+integrity in release evidence. Preserve the tarball and `SHA256SUMS` outside the
+repository, and hand them to the maintainer; temporary directories may be cleaned
+by the OS, so move them to durable local storage when needed. Do not commit the
+tarball or npm authentication files.
+
+The artifact must contain exactly the four runtime bundles, the public declaration
+tree, `package.json`, `Readme.md`, and `LICENSE`; `test:package` enforces this list.
+Do not edit packaged files or rebuild after packing. If they change, rerun the
+preparation checks, pack again, and replace the release evidence. Changes to
+excluded release documentation do not change the package. The maintainer uses
+this retained artifact after merge; another build/pack cycle is not required.
+
+## Maintainer-only follow-up after merge
+
+These actions do not block PR approval or Issue completion. Run them in order in
+one shell and stop if any check fails. A valid npm session leaves only the publish
+command as the action needed to make the validated package public; verification
+and tagging follow publication.
+
+### 1. Select the retained artifact and merged source commit
+
+Start with a clean checkout of updated `master`, confirm the preparation change
+is merged, and record the commit to tag after successful publication:
 
 ```sh
 git switch master
 git pull --ff-only
 git status --short
-node -e 'const p = require("./package.json"); if (p.name !== "mmd-parser" || p.version !== "1.1.0") throw new Error("Expected mmd-parser@1.1.0");'
+node -e 'const p = require("./package.json"); if (p.name !== "mmd-parser" || p.version !== "1.1.1") throw new Error("Expected mmd-parser@1.1.1");'
 release_commit=$(git rev-parse HEAD)
+# Replace this path with the retained directory from the preparation evidence.
+release_tmp=/absolute/path/to/validated-release
+release_tarball="$release_tmp/mmd-parser-1.1.1.tgz"
+(cd "$release_tmp" && shasum -a 256 -c SHA256SUMS)
 ```
 
-`git status --short` must be empty. Repeat all commands in **Validate before
-merge** on this commit and inspect the online sample output. Then run
-`git status --short` again: it must still be empty, including generated bundles
-and declarations. If rebuilding changes tracked files, resolve and merge those
-changes before restarting this procedure. Record `release_commit`; it is the
-commit to tag after publication and verification succeed.
+`git status --short` must be empty. Confirm the selected commit's packaged files
+match the validated preparation revision, and check the checksum against the
+recorded release evidence. If packaged files changed during or after merge,
+repeat **Prepare and validate before merge** on that revision before publishing.
+No credentials, registry checks, or Git tags are needed for preparation approval.
 
-### 2. Pack, inspect, and test the release artifact
-
-Keep the artifact outside the repository and use this exact tarball for both
-validation and publication:
-
-```sh
-release_tmp=$(mktemp -d)
-npm pack --json --pack-destination "$release_tmp"
-tar -tzf "$release_tmp/mmd-parser-1.1.0.tgz"
-npm run test:package -- "$release_tmp/mmd-parser-1.1.0.tgz"
-```
-
-Inspect the pack output's name, version, file list, and integrity. The consumer
-check must pass for this tarball. Preserve it until registry verification is
-complete. Do not edit package files or rebuild after packing; if changes are
-needed, restart validation and packing on the updated, merged commit.
-
-### 3. Authenticate locally and publish the validated tarball
+### 2. Authenticate if needed and publish the validated tarball
 
 Use the maintainer's npm account with publish access to `mmd-parser`. Check the
 current login and, if needed, log in from the home directory using the user
@@ -103,18 +134,18 @@ for interactive authentication.
 Before publishing, check whether the version already exists:
 
 ```sh
-npm view mmd-parser@1.1.0 version --registry=https://registry.npmjs.org
+npm view mmd-parser@1.1.1 version --registry=https://registry.npmjs.org
 ```
 
-Proceed only if the registry explicitly reports that `1.1.0` does not exist
+Proceed only if the registry explicitly reports that `1.1.1` does not exist
 (`E404`). Resolve network or authentication errors before proceeding. If the
 version exists, skip publication and verify that registry artifact instead.
 
-Publish the validated tarball as public `mmd-parser@1.1.0` with the `latest` tag,
+Publish the validated tarball as public `mmd-parser@1.1.1` with the `latest` tag,
 completing npm's interactive authentication/2FA prompts as needed:
 
 ```sh
-npm publish "$release_tmp/mmd-parser-1.1.0.tgz" --access public --tag latest --userconfig "$HOME/.npmrc" --registry=https://registry.npmjs.org
+npm publish "$release_tarball" --access public --tag latest --userconfig "$HOME/.npmrc" --registry=https://registry.npmjs.org
 ```
 
 See [npm publish](https://docs.npmjs.com/cli/v11/commands/npm-publish/) for tarball
@@ -122,17 +153,17 @@ publication. If the command fails or its outcome is unclear, check the registry
 before retrying. npm versions are immutable: if publication succeeded, continue
 verification rather than attempting to republish or changing the version.
 
-### 4. Verify the registry artifact
+### 3. Verify the registry artifact
 
-Confirm the registry version is `1.1.0` and the `latest` dist-tag points to it:
+Confirm the registry version is `1.1.1` and the `latest` dist-tag points to it:
 
 ```sh
-npm view mmd-parser@1.1.0 version dist.integrity --registry=https://registry.npmjs.org
+npm view mmd-parser@1.1.1 version dist.integrity --registry=https://registry.npmjs.org
 npm view mmd-parser dist-tags.latest --registry=https://registry.npmjs.org
 registry_tmp=$(mktemp -d)
-npm pack mmd-parser@1.1.0 --pack-destination "$registry_tmp" --registry=https://registry.npmjs.org
-cmp "$release_tmp/mmd-parser-1.1.0.tgz" "$registry_tmp/mmd-parser-1.1.0.tgz"
-npm run test:package -- "$registry_tmp/mmd-parser-1.1.0.tgz"
+npm pack mmd-parser@1.1.1 --pack-destination "$registry_tmp" --registry=https://registry.npmjs.org
+cmp "$release_tarball" "$registry_tmp/mmd-parser-1.1.1.tgz"
+npm run test:package -- "$registry_tmp/mmd-parser-1.1.1.tgz"
 ```
 
 The integrity must match the local pack output, and `cmp` must confirm identical
@@ -140,19 +171,19 @@ tarballs. The consumer check installs the registry artifact in a clean temporary
 project and verifies its CommonJS and native ESM runtime API and strict TypeScript
 declarations. Repository source cannot mask missing published files.
 
-### 5. Tag the validated commit and record the result
+### 4. Tag the validated commit and record the result
 
 After publication and registry verification succeed, create and push only the
 annotated release tag on the recorded commit:
 
 ```sh
-git tag -a v1.1.0 "$release_commit" -m "Release mmd-parser 1.1.0"
-git push origin v1.1.0
+git tag -a v1.1.1 "$release_commit" -m "Release mmd-parser 1.1.1"
+git push origin v1.1.1
 rm -r "$release_tmp" "$registry_tmp"
 ```
 
 Tagging records the published source commit; it does not publish a package.
-If `v1.1.0` already exists locally or remotely, confirm it points to
+If `v1.1.1` already exists locally or remotely, confirm it points to
 `release_commit` and do not move or force-push it. If a tag push fails after
 successful publication, finish tagging without publishing again.
 

@@ -32,7 +32,7 @@ try {
   var installed = path.join(consumer, 'node_modules', 'mmd-parser');
   var pkg = JSON.parse(fs.readFileSync(path.join(installed, 'package.json'), 'utf8'));
   assert.strictEqual(pkg.name, 'mmd-parser');
-  assert.strictEqual(pkg.version, '1.1.0');
+  assert.strictEqual(pkg.version, '1.1.1');
   assert.strictEqual(pkg.main, 'build/mmdparser.js');
   assert.strictEqual(pkg['jsnext:main'], 'build/mmdparser.module.js');
   assert.strictEqual(pkg.types, 'build/types/index.d.ts');

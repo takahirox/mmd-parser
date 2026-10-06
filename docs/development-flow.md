@@ -75,8 +75,9 @@ with shareable inputs when needed for the Issue. Do not silently treat
 unavailable samples as passing tests.
 
 For release changes, also run `npm run test:package` after building. Follow the
-[release procedure](releases.md) for local validation, packing, npm authentication,
-manual publication, tagging, and required post-merge registry checks.
+[release procedure](releases.md) for local validation and packing before merge,
+then separate maintainer-only authentication, publication, registry verification,
+and tagging. These maintainer actions are not required for Issue completion.
 
 For documentation-only changes, check template front matter, Markdown syntax,
 relative links, command names, and consistency across the templates and guides.
