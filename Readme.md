@@ -7,8 +7,9 @@ mmd-parser parses MMD ArrayBuffer/Strings and generates Object.
 See the [development flow](docs/development-flow.md) for Issue authoring, build and
 test commands, and PR preparation, and the [review guidelines](docs/review-guidelines.md)
 for review, merge, and Issue closure guidance for contributors and AI agents.
-See the [release procedure](docs/releases.md) for publishing `mmd-parser@1.1.0`
-manually from a local checkout with the maintainer's npm authentication.
+See the [release procedure](docs/releases.md) for preparing and validating
+`mmd-parser@1.1.1` before merge, then manually publishing the retained tarball
+with the maintainer's npm authentication after merge.
 
 
 ## Browser
