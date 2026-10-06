@@ -8,7 +8,7 @@ See the [development flow](docs/development-flow.md) for Issue authoring, build 
 test commands, and PR preparation, and the [review guidelines](docs/review-guidelines.md)
 for review, merge, and Issue closure guidance for contributors and AI agents.
 See the [release procedure](docs/releases.md) for preparing and validating
-`mmd-parser@1.1.1` before merge, then manually publishing the retained tarball
+`mmd-parser@1.1.2` before merge, then manually publishing the retained tarball
 with the maintainer's npm authentication after merge.
 
 
