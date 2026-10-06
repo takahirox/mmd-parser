@@ -10147,6 +10147,11 @@ function readPmxBone(dv, metadata) {
     var ik = (flag & 0x20) ? { ik: readPmxIk(dv, metadata) } : {};
     return __assign(__assign(__assign(__assign(__assign(__assign(__assign({}, base), connection), grant), axis), local), key), ik);
 }
+function readPmxUvMorphElements(dv, metadata, elementCount) {
+    return readRecords(elementCount, function () { return ({
+        index: dv.getIndex(metadata.vertexIndexSize, true), uv: dv.getFloat32Array(4)
+    }); });
+}
 function readPmxMorph(dv, metadata) {
     var name = dv.getTextBuffer();
     var englishName = dv.getTextBuffer();
@@ -10168,9 +10173,15 @@ function readPmxMorph(dv, metadata) {
                     index: dv.getIndex(metadata.boneIndexSize), position: dv.getFloat32Array(3), rotation: dv.getFloat32Array(4)
                 }); }) });
         case 3:
-            return __assign(__assign({}, base), { type: type, elements: readRecords(elementCount, function () { return ({
-                    index: dv.getIndex(metadata.vertexIndexSize, true), uv: dv.getFloat32Array(4)
-                }); }) });
+            return __assign(__assign({}, base), { type: type, elements: readPmxUvMorphElements(dv, metadata, elementCount) });
+        case 4:
+            return __assign(__assign({}, base), { type: type, elements: readPmxUvMorphElements(dv, metadata, elementCount) });
+        case 5:
+            return __assign(__assign({}, base), { type: type, elements: readPmxUvMorphElements(dv, metadata, elementCount) });
+        case 6:
+            return __assign(__assign({}, base), { type: type, elements: readPmxUvMorphElements(dv, metadata, elementCount) });
+        case 7:
+            return __assign(__assign({}, base), { type: type, elements: readPmxUvMorphElements(dv, metadata, elementCount) });
         case 8:
             return __assign(__assign({}, base), { type: type, elements: readRecords(elementCount, function () { return ({
                     index: dv.getIndex(metadata.materialIndexSize), type: dv.getUint8(),
@@ -10181,8 +10192,7 @@ function readPmxMorph(dv, metadata) {
                     toonColor: dv.getFloat32Array(4)
                 }); }) });
         default:
-            // Additional UV and other unsupported morphs consume no element bytes,
-            // matching the existing parser; this migration does not add support.
+            // Unsupported morphs retain the existing empty-elements behavior.
             return __assign(__assign({}, base), { type: type, elements: [] });
     }
 }

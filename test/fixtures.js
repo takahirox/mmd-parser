@@ -109,7 +109,7 @@ function pmx(size, version, unsupported) {
     .index(size, 0).index(size, 0).f32(0.5).floats([1, 2, 3]).floats([4, 5, 6]).floats([7, 8, 9]).u32(5)
     .index(size, 0).u32(10).f32(0.5).u32(2).index(size, 0).u8(1).floats([-1, -2, -3]).floats([1, 2, 3])
     .index(size, 1).u8(0);
-  var morphTypes = unsupported ? [0, 1, 2, 3, 8, 4, 5, 6, 7, 9, 10, 255] : [0, 1, 2, 3, 8];
+  var morphTypes = unsupported ? [0, 1, 2, 3, 8, 9, 10, 255] : [0, 1, 2, 3, 8];
   w.u32(morphTypes.length);
   morphTypes.forEach(function(morphType) {
     w.text('morph').text('english').u8(1).u8(morphType).u32(1);
@@ -131,6 +131,29 @@ function pmx(size, version, unsupported) {
   constraint(w);
   return w.buffer();
 }
+// Valid PMX 2.0 with two additional-UV offsets and following morph/frame data.
+// Other index sizes stay at one byte to catch use of the wrong header field.
+function pmxAdditionalUv(size, type) {
+  var w = new Writer();
+  w.chars('PMX ', 4).f32(2).u8(8).bytes([0, 4, size, 1, 1, 1, 1, 1]);
+  w.text('additional UV').text('additional UV').text('').text('').u32(3);
+  for (var i = 0; i < 3; i++) {
+    w.floats([i, 0, 0]).floats([0, 1, 0]).floats([0, 0]);
+    for (var j = 0; j < 4; j++) w.floats([0, 0, 0, 0]);
+    w.u8(0).i8(0).f32(1); // BDEF1, bone 0, edge ratio.
+  }
+  w.u32(0).u32(0).u32(0).u32(1); // Faces, textures, materials, bones.
+  w.text('bone').text('bone').floats([0, 0, 0]).i8(-1).u32(0).u16(0).floats([0, 1, 0]);
+  w.u32(2).text('additional UV morph').text('additional UV morph').u8(4).u8(type).u32(2);
+  w.index(size, 2, true).floats([0.25, -0.5, 0.75, -1]);
+  w.index(size, 0, true).floats([-2, 3, -4, 5]);
+  w.text('following vertex morph').text('vertex morph').u8(1).u8(1).u32(1)
+    .index(size, 1, true).floats([1, 2, 3]);
+  w.u32(1).text('following frame').text('frame').u8(0).u32(2)
+    .u8(1).i8(0).u8(1).i8(1);
+  w.u32(0).u32(0); // Rigid bodies and constraints.
+  return w.buffer();
+}
 function vmd() {
   var w = new Writer();
   w.chars('Vocaloid Motion Data 0002', 30).chars('model', 20).u32(1)
@@ -142,4 +165,4 @@ function vmd() {
   return w.buffer();
 }
 var vpd = 'Vocaloid Pose Data file\n\nmodel.pmd;\n1;\nBone0{bone\n1.0,2.0,3.0;\n0.25,0.5,0.75,1.0;\n}\n';
-module.exports = { Writer: Writer, pmd: pmd, pmx: pmx, vmd: vmd, vpd: vpd };
+module.exports = { Writer: Writer, pmd: pmd, pmx: pmx, pmxAdditionalUv: pmxAdditionalUv, vmd: vmd, vpd: vpd };

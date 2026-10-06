@@ -226,6 +226,30 @@ export type PmxMorph = PmxMorphBase & ({
         uv: Vector4;
     }[];
 } | {
+    type: 4;
+    elements: {
+        index: number;
+        uv: Vector4;
+    }[];
+} | {
+    type: 5;
+    elements: {
+        index: number;
+        uv: Vector4;
+    }[];
+} | {
+    type: 6;
+    elements: {
+        index: number;
+        uv: Vector4;
+    }[];
+} | {
+    type: 7;
+    elements: {
+        index: number;
+        uv: Vector4;
+    }[];
+} | {
     type: 8;
     elements: MaterialMorphElement[];
 } | {

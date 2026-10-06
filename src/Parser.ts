@@ -289,6 +289,12 @@ function readPmxBone ( dv: DataViewEx, metadata: PmxHeader ): PmxBone {
   return { ...base, ...connection, ...grant, ...axis, ...local, ...key, ...ik };
 }
 
+function readPmxUvMorphElements ( dv: DataViewEx, metadata: PmxHeader, elementCount: number ) {
+  return readRecords( elementCount, () => ({
+    index: dv.getIndex( metadata.vertexIndexSize, true ), uv: dv.getFloat32Array( 4 )
+  }) );
+}
+
 function readPmxMorph ( dv: DataViewEx, metadata: PmxHeader ): PmxMorph {
   const name = dv.getTextBuffer();
   const englishName = dv.getTextBuffer();
@@ -310,9 +316,15 @@ function readPmxMorph ( dv: DataViewEx, metadata: PmxHeader ): PmxMorph {
         index: dv.getIndex( metadata.boneIndexSize ), position: dv.getFloat32Array( 3 ), rotation: dv.getFloat32Array( 4 )
       }) ) };
     case 3:
-      return { ...base, type, elements: readRecords( elementCount, () => ({
-        index: dv.getIndex( metadata.vertexIndexSize, true ), uv: dv.getFloat32Array( 4 )
-      }) ) };
+      return { ...base, type, elements: readPmxUvMorphElements( dv, metadata, elementCount ) };
+    case 4:
+      return { ...base, type, elements: readPmxUvMorphElements( dv, metadata, elementCount ) };
+    case 5:
+      return { ...base, type, elements: readPmxUvMorphElements( dv, metadata, elementCount ) };
+    case 6:
+      return { ...base, type, elements: readPmxUvMorphElements( dv, metadata, elementCount ) };
+    case 7:
+      return { ...base, type, elements: readPmxUvMorphElements( dv, metadata, elementCount ) };
     case 8:
       return { ...base, type, elements: readRecords( elementCount, () => ({
         index: dv.getIndex( metadata.materialIndexSize ), type: dv.getUint8(),
@@ -323,8 +335,7 @@ function readPmxMorph ( dv: DataViewEx, metadata: PmxHeader ): PmxMorph {
         toonColor: dv.getFloat32Array( 4 )
       }) ) };
     default:
-      // Additional UV and other unsupported morphs consume no element bytes,
-      // matching the existing parser; this migration does not add support.
+      // Unsupported morphs retain the existing empty-elements behavior.
       return { ...base, type, elements: [] };
   }
 }
