@@ -1,5 +1,9 @@
 # mmd-parser 1.1.2 preparation evidence
 
+Historical record of the former retained-tarball workflow. Use the current
+[release procedure](releases.md) for future releases; the paths and publication
+commands below are historical evidence, not current release instructions.
+
 Prepared for Issue [#19](https://github.com/takahirox/mmd-parser/issues/19) on
 2026-10-06 with Node `24.12.0` and npm `11.6.2`.
 
