@@ -7,9 +7,10 @@ mmd-parser parses MMD ArrayBuffer/Strings and generates Object.
 See the [development flow](docs/development-flow.md) for Issue authoring, build and
 test commands, and PR preparation, and the [review guidelines](docs/review-guidelines.md)
 for review, merge, and Issue closure guidance for contributors and AI agents.
-See the [release procedure](docs/releases.md) for preparing and validating
-`mmd-parser@1.1.2` before merge, then manually publishing the retained tarball
-with the maintainer's npm authentication after merge.
+See the [release procedure](docs/releases.md) for preparing a release, then running
+`npm publish` from a clean, updated `master` checkout. npm builds and validates the
+package automatically; authentication and post-publication Git tagging remain
+separate maintainer actions.
 
 
 ## Browser
@@ -112,6 +113,10 @@ it in a temporary consumer outside the repository, and checks CommonJS and nativ
 Node ESM runtime exports and strict TypeScript imports from `mmd-parser` with
 `node`, `node16`, `nodenext`, and `bundler` resolution. Only runtime bundles,
 declarations, package metadata, the README, and the license are distributed.
+The validator packs the completed build with lifecycle scripts disabled, so it
+can also run safely inside `prepublishOnly`. `npm publish` runs the build, type
+checks, offline tests, and package consumer checks before publication; `prepack`
+builds all bundles and declarations for both publication and standalone `npm pack`.
 
 ### How to load
 

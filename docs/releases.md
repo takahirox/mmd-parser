@@ -1,203 +1,137 @@
-# Release mmd-parser 1.1.2
+# Releasing mmd-parser
 
-Issue [#19](https://github.com/takahirox/mmd-parser/issues/19) prepares this release
-for manual publication of an already validated tarball. All preparation and
-package checks happen before merge, without npm credentials. Authentication,
-publication, registry verification, and tagging are separate maintainer-only
-follow-up actions. Required post-merge verification for Issue completion: **None**.
-Do not publish or create/push `v1.1.2` during repository preparation.
+After a release-preparation/version-bump PR is merged, the maintainer publishes
+from a clean, updated `master` checkout with **`npm publish`**. npm builds the
+package and runs deterministic release checks before uploading it. No tarball
+needs to be retained or handed off from CI, an agent, or a temporary directory.
+Authentication may be required separately. Registry verification and Git tagging
+follow successful publication and are not required for Issue completion.
 
 ## Prepare and validate before merge
 
-This release includes the PMX additional UV morph parsing fix from
-Issue [#17](https://github.com/takahirox/mmd-parser/issues/17) /
-PR [#18](https://github.com/takahirox/mmd-parser/pull/18). Morph types 4–7 consume
-their vertex indices and four UV offsets, preserving alignment of following
-sections. No further parser behavior changes are part of release preparation.
-
-The release checks have been validated with Node `24.12.0` and npm `11.6.2`.
-
-See the [1.1.2 preparation evidence](release-1.1.2-validation.md) for the retained
-artifact path, checksums, successful checks, and exact manual publish command.
-
-Run the following preparation checks:
+Update the version in `package.json` in the release-preparation PR. Preserve the
+existing package file allowlist and conditional exports. Install the existing
+development dependencies when setting up or updating the checkout:
 
 ```sh
 npm install --no-package-lock --no-audit --no-fund
+```
+
+Run the deterministic checks and exercise the publish lifecycle without uploading
+anything or requiring npm authentication:
+
+```sh
 npm run build-uglify
 npm run typecheck
 npm run test:offline
-npm test
 npm run test:package
-git diff --check
-```
-
-`npm run all` builds the UMD, minified UMD, browser ES module, native ESM, and
-declarations, checks strict types, runs offline fixtures, and runs the
-network-dependent sample tests.
-The online smoke script logs metadata without assertions: inspect its output for
-successful PMD (`format: 'pmd'`), VMD (`motionCount: 14160`), and VPD
-(`boneCount: 93`) parses. A zero exit code with missing samples is not a pass.
-
-The package check packs the current build, validates every installed file, then
-checks CommonJS and native Node ESM exports and parsing methods and strict
-TypeScript imports of `Parser`, `Pmd`, `Pmx`, `Vmd`, and `Vpd` in a clean temporary
-consumer outside the repository, using legacy, Node16, NodeNext, and bundler
-resolution. Both runtime consumers also assert the additional UV morph fix for
-types 4–7 with 1-, 2-, and 4-byte vertex indices in both coordinate modes,
-including the following vertex morph and display frame. It removes its temporary
-files even on failure. To check a specific tarball, use `npm run test:package -- /path/to/package.tgz`.
-
-Keep `package.json` at `1.1.2`, with its `main`, `jsnext:main`, `types`, conditional
-`exports`, and `files` entries. The root export selects the `.mjs` bundle and
-`.d.mts` declaration entry for imports, and the UMD bundle and `.d.ts` entry for
-CommonJS; existing browser bundle subpaths remain available. The allowlist
-distributes only runtime bundles and `build/types/`; npm also includes
-`package.json`, `Readme.md`, and `LICENSE`.
-Source, tests, scripts, workflow files, documentation guides, and intermediate
-build output are excluded. Keep dependency ranges unchanged and do not add an
-incidental lockfile.
-
-### Pack and retain the exact release artifact
-
-After the checks above pass, pack outside the repository, inspect the file list,
-and test this exact tarball in the isolated consumer:
-
-```sh
-release_tmp=$(mktemp -d "${TMPDIR:-/tmp}/mmd-parser-1.1.2-release.XXXXXX")
-release_tarball="$release_tmp/mmd-parser-1.1.2.tgz"
-npm pack --json --pack-destination "$release_tmp"
-tar -tzf "$release_tarball"
-npm run test:package -- "$release_tarball"
-(cd "$release_tmp" && shasum -a 256 mmd-parser-1.1.2.tgz > SHA256SUMS)
+npm publish --dry-run
 git diff --check
 git status --short
 ```
 
-Inspect the pack output's name (`mmd-parser`), version (`1.1.2`), file list,
-and integrity. Include any changed tracked bundles and declarations in the
-preparation commit. The consumer check must pass for this tarball. Record the
-validation results, source revision, absolute artifact path, SHA-256, and npm
-integrity in release evidence. Preserve the tarball and `SHA256SUMS` outside the
-repository, and hand them to the maintainer; temporary directories may be cleaned
-by the OS, so move them to durable local storage when needed. Do not commit the
-tarball or npm authentication files.
+Include any changed tracked bundles and declarations in the preparation commit.
+The dry-run contents must be exactly the four runtime bundles, eight declaration
+files under `build/types/`, `package.json`, `Readme.md`, and `LICENSE` (15 files).
+The package validator enforces this list. Source, tests, scripts, workflow files,
+documentation guides, and intermediate build output are excluded. Do not add an
+incidental lockfile or authentication files.
 
-The artifact must contain exactly the four runtime bundles, the public declaration
-tree, `package.json`, `Readme.md`, and `LICENSE`; `test:package` enforces this list.
-Do not edit packaged files or rebuild after packing. If they change, rerun the
-preparation checks, pack again, and replace the release evidence. Changes to
-excluded release documentation do not change the package. The maintainer uses
-this retained artifact after merge; another build/pack cycle is not required.
+### What the npm lifecycle validates
 
-## Maintainer-only follow-up after merge
+`prepublishOnly` runs the existing scripts in order: `build-uglify`, `typecheck`,
+`test:offline`, and `test:package`. It builds before testing so the checks use
+fresh artifacts even when the checkout has missing or stale build output. Any
+failure aborts publication before registry upload.
 
-These actions do not block PR approval or Issue completion. Run them in order in
-one shell and stop if any check fails. A valid npm session leaves only the publish
-command as the action needed to make the validated package public; verification
-and tagging follow publication.
+`test:package` internally runs `npm pack --ignore-scripts` on that completed
+build. This skips the nested pack's lifecycle hooks, avoiding recursion and
+unnecessary rebuilds during validation. It installs the resulting tarball in an
+isolated temporary consumer outside the repository, verifies every installed
+file, checks CommonJS and native ESM runtime consumers, and compiles strict
+TypeScript consumers with legacy, Node16, NodeNext, and bundler resolution.
+Runtime checks include the PMX additional UV morph regression. All temporary
+consumer files and the validation tarball are removed, including on failure.
+The local pack and install explicitly disable npm's inherited dry-run setting,
+so `npm publish --dry-run` still exercises real consumer checks without uploading.
+Standalone `npm run test:package` still requires a completed build; it also
+accepts an existing tarball with `npm run test:package -- /path/to/package.tgz`.
 
-### 1. Select the retained artifact and merged source commit
+After `prepublishOnly`, npm runs `prepack`, which uses `build-uglify` to produce
+all bundles and declarations for the actual package. This deliberately builds
+again because `prepublishOnly` runs before `prepack`. A standalone `npm pack`
+also builds automatically through `prepack`, but does not run publish-only
+checks. See npm's [lifecycle order](https://docs.npmjs.com/cli/v11/using-npm/scripts/).
+Keep lifecycle scripts enabled for publication and its dry-run.
 
-Start with a clean checkout of updated `master`, confirm the preparation change
-is merged, and record the commit to tag after successful publication:
+The network-dependent `npm test` sample smoke script remains available separately
+(and through `npm run all`). It logs metadata without assertions and is not part
+of the deterministic publication gate; the offline and installed-package checks
+provide automated assertions without external sample downloads. No human-only
+verification is required before merge.
+
+The [1.1.1](release-1.1.1-validation.md) and
+[1.1.2](release-1.1.2-validation.md) evidence files are historical records of the
+previous release process. Their retained artifact paths and publication commands
+do not define future releases.
+
+## Publish after merge
+
+Use a checkout with the development dependencies installed as above. Confirm the
+release-preparation/version-bump PR is merged and `git status --short` is empty.
+Before publication, record the source commit for later tagging with
+`release_commit=$(git rev-parse HEAD)`:
 
 ```sh
 git switch master
 git pull --ff-only
 git status --short
-node -e 'const p = require("./package.json"); if (p.name !== "mmd-parser" || p.version !== "1.1.2") throw new Error("Expected mmd-parser@1.1.2");'
-release_commit=$(git rev-parse HEAD)
-# Replace this path with the retained directory from the preparation evidence.
-release_tmp=/absolute/path/to/validated-release
-release_tarball="$release_tmp/mmd-parser-1.1.2.tgz"
-(cd "$release_tmp" && shasum -a 256 -c SHA256SUMS)
+npm publish
 ```
 
-`git status --short` must be empty. Confirm the selected commit's packaged files
-match the validated preparation revision, and check the checksum against the
-recorded release evidence. If packaged files changed during or after merge,
-repeat **Prepare and validate before merge** on that revision before publishing.
-No credentials, registry checks, or Git tags are needed for preparation approval.
+Stop if the checkout is dirty or any lifecycle check fails. Plain `npm publish`
+publishes this unscoped package publicly
+with the default `latest` tag, using the maintainer's normal npm configuration.
 
-### 2. Authenticate if needed and publish the validated tarball
+If npm authentication is missing, run `npm login` separately using the
+maintainer's normal user configuration, then retry `npm publish`. Complete any
+interactive authentication or OTP prompts yourself. Keep credentials in user
+configuration outside the repository; do not add an authenticated project
+`.npmrc`, tokens, passwords, or OTPs to repository files or release evidence.
+These scripts do not log in, manage credentials, or create/push Git tags.
 
-Use the maintainer's npm account with publish access to `mmd-parser`. Check the
-current login and, if needed, log in from the home directory using the user
-configuration file outside the checkout:
+If publication fails with an unclear outcome, check the registry version before
+retrying. Published versions cannot be overwritten; if the version already
+exists, verify it instead of trying to publish it again.
 
-```sh
-npm whoami --userconfig "$HOME/.npmrc" --registry=https://registry.npmjs.org
-# Run only if login is needed; complete the browser authentication/2FA prompts.
-(cd "$HOME" && npm login --userconfig "$HOME/.npmrc" --registry=https://registry.npmjs.org)
-npm whoami --userconfig "$HOME/.npmrc" --registry=https://registry.npmjs.org
-```
+## Verify publication, then tag
 
-Keep npm authentication in the local user configuration (`$HOME/.npmrc`), which
-must be outside the repository. Never put tokens, credentials, or one-time codes
-in repository files, a project `.npmrc`, GitHub secrets, commits, or release
-evidence. Follow npm's [login documentation](https://docs.npmjs.com/cli/v11/commands/npm-login/)
-for interactive authentication.
-
-Before publishing, check whether the version already exists:
+After publication succeeds, verify the version and `latest` tag and test the
+registry artifact. In the release checkout:
 
 ```sh
-npm view mmd-parser@1.1.2 version --registry=https://registry.npmjs.org
-```
-
-Proceed only if the registry explicitly reports that `1.1.2` does not exist
-(`E404`). Resolve network or authentication errors before proceeding. If the
-version exists, skip publication and verify that registry artifact instead.
-
-Publish the validated tarball as public `mmd-parser@1.1.2` with the `latest` tag,
-completing npm's interactive authentication/2FA prompts as needed:
-
-```sh
-npm publish "$release_tarball" --access public --tag latest --userconfig "$HOME/.npmrc" --registry=https://registry.npmjs.org
-```
-
-See [npm publish](https://docs.npmjs.com/cli/v11/commands/npm-publish/) for tarball
-publication. If the command fails or its outcome is unclear, check the registry
-before retrying. npm versions are immutable: if publication succeeded, continue
-verification rather than attempting to republish or changing the version.
-
-### 3. Verify the registry artifact
-
-Confirm the registry version is `1.1.2` and the `latest` dist-tag points to it:
-
-```sh
-npm view mmd-parser@1.1.2 version dist.integrity --registry=https://registry.npmjs.org
-npm view mmd-parser dist-tags.latest --registry=https://registry.npmjs.org
+release_version=$(node -p "require('./package.json').version")
+npm view "mmd-parser@$release_version" version dist.integrity
+npm view mmd-parser dist-tags.latest
 registry_tmp=$(mktemp -d)
-npm pack mmd-parser@1.1.2 --pack-destination "$registry_tmp" --registry=https://registry.npmjs.org
-cmp "$release_tarball" "$registry_tmp/mmd-parser-1.1.2.tgz"
-npm run test:package -- "$registry_tmp/mmd-parser-1.1.2.tgz"
+npm pack "mmd-parser@$release_version" --pack-destination "$registry_tmp"
+npm run test:package -- "$registry_tmp/mmd-parser-$release_version.tgz"
+rm -r "$registry_tmp"
 ```
 
-The integrity must match the local pack output, and `cmp` must confirm identical
-tarballs. The consumer check installs the registry artifact in a clean temporary
-project and verifies its CommonJS and native ESM runtime API and strict TypeScript
-declarations. Repository source cannot mask missing published files.
+The reported version and `latest` tag must match the release version, and the
+installed-package checks must pass. This temporary registry download is only for
+post-publication verification; it is not an artifact needed to publish.
 
-### 4. Tag the validated commit and record the result
-
-After publication and registry verification succeed, create and push only the
-annotated release tag on the recorded commit:
+Only after successful publication and verification, create an annotated Git tag
+on the source commit recorded before publication:
 
 ```sh
-git tag -a v1.1.2 "$release_commit" -m "Release mmd-parser 1.1.2"
-git push origin v1.1.2
-rm -r "$release_tmp" "$registry_tmp"
+git tag -a "v$release_version" "$release_commit" -m "Release mmd-parser $release_version"
 ```
 
-Tagging records the published source commit; it does not publish a package.
-If `v1.1.2` already exists locally or remotely, confirm it points to
-`release_commit` and do not move or force-push it. If a tag push fails after
-successful publication, finish tagging without publishing again.
-
-Record the release commit/tag, successful publication, registry version/integrity,
-and runtime/TypeScript consumer results on the merged PR. If publication or
-verification finds a problem, preserve the artifact and evidence and create a
-focused follow-up Issue describing the problem and remaining work. Do not add
-the `Task` label to that Issue; triage it separately. Pending post-merge results
-do not prevent pre-merge approval or source Issue closure.
+Tagging and any tag push remain separate, manual maintainer actions. If the tag
+already exists, verify its target and do not move or force-push it. A tagging
+failure after publication does not require publishing again. Actual publication,
+registry verification, and tagging are future maintainer release actions, not
+post-merge requirements for completing Issue #21.

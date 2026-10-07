@@ -5,6 +5,7 @@ var os = require('os');
 var path = require('path');
 var execFileSync = require('child_process').execFileSync;
 var root = path.resolve(__dirname, '..');
+var sourcePackage = require('../package.json');
 var temporary = fs.mkdtempSync(path.join(os.tmpdir(), 'mmd-parser-consumer-'));
 
 function npm(args, cwd) {
@@ -18,7 +19,10 @@ try {
   if (process.argv[2]) {
     tarball = path.resolve(process.argv[2]);
   } else {
-    var packed = JSON.parse(npm(['pack', '--json', '--pack-destination', temporary], root));
+    // Validate the completed build without re-entering package lifecycle hooks.
+    // prepublishOnly builds before this check; standalone callers must build first.
+    // Override inherited publish --dry-run so the local consumer is really tested.
+    var packed = JSON.parse(npm(['pack', '--ignore-scripts', '--dry-run=false', '--json', '--pack-destination', temporary], root));
     tarball = path.join(temporary, packed[0].filename);
   }
   var consumer = path.join(temporary, 'consumer');
@@ -26,13 +30,13 @@ try {
   fs.writeFileSync(path.join(consumer, 'package.json'), JSON.stringify({
     name: 'mmd-parser-package-check', version: '0.0.0', private: true
   }));
-  console.log(npm(['install', '--ignore-scripts', '--no-package-lock', '--no-audit',
+  console.log(npm(['install', '--ignore-scripts', '--dry-run=false', '--no-package-lock', '--no-audit',
     '--no-fund', tarball], consumer).trim());
 
   var installed = path.join(consumer, 'node_modules', 'mmd-parser');
   var pkg = JSON.parse(fs.readFileSync(path.join(installed, 'package.json'), 'utf8'));
   assert.strictEqual(pkg.name, 'mmd-parser');
-  assert.strictEqual(pkg.version, '1.1.2');
+  assert.strictEqual(pkg.version, sourcePackage.version);
   assert.strictEqual(pkg.main, 'build/mmdparser.js');
   assert.strictEqual(pkg['jsnext:main'], 'build/mmdparser.module.js');
   assert.strictEqual(pkg.types, 'build/types/index.d.ts');

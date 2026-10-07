@@ -26,6 +26,8 @@
     "all": "npm run build-uglify && npm run typecheck && npm run test:offline && npm test",
     "build": "tsc && rollup -c && node scripts/copy-types.js",
     "build-uglify": "npm run build && uglifyjs build/mmdparser.js -cm --preamble \"// https://github.com/takahirox/mmd-parser#readme\" > build/mmdparser.min.js",
+    "prepack": "npm run build-uglify",
+    "prepublishOnly": "npm run build-uglify && npm run typecheck && npm run test:offline && npm run test:package",
     "dev": "node scripts/dev.js",
     "test": "node test/index.js",
     "typecheck": "tsc --noEmit && tsc -p test/tsconfig.json",
