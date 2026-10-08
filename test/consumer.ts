@@ -1,5 +1,5 @@
 import { MMDParser, Parser, CharsetEncoder } from 'mmd-parser';
-import type { Pmd, Pmx, Vmd, Vpd, Vector3 } from 'mmd-parser';
+import type { Pmd, Pmx, Vmd, Vpd, PmxVertex, Vector2, Vector3 } from 'mmd-parser';
 
 const parser: Parser = new MMDParser.Parser();
 const buffer = new ArrayBuffer(0);
@@ -21,3 +21,32 @@ parser.parsePmd('invalid');
 const count: string = pmd.metadata.vertexCount;
 // @ts-expect-error Coordinate state is a finite union.
 pmx.metadata.coordinateSystem = 'other';
+
+// Narrowing the installed discriminated union exposes required SDEF tuples.
+function checkSkinning(vertex: PmxVertex): void {
+  if (vertex.type === 3) {
+    const indices: Vector2 = vertex.skinIndices;
+    const weights: Vector2 = vertex.skinWeights;
+    const c: Vector3 = vertex.skinC;
+    const r0: Vector3 = vertex.skinR0;
+    const r1: Vector3 = vertex.skinR1;
+  } else if (vertex.type === 1) {
+    // @ts-expect-error BDEF2 does not expose an SDEF vector.
+    const c: Vector3 = vertex.skinC;
+  }
+}
+pmx.vertices.forEach(checkSkinning);
+const sdef: Extract<PmxVertex, { type: 3 }> = { position: [1, 2, 3], normal: [0, 1, 2],
+  uv: [0, 0], auvs: [], edgeRatio: 1, type: 3, skinIndices: [0, 1], skinWeights: [0.25, 0.75],
+  skinC: [1, 2, 3], skinR0: [4, 5, 6], skinR1: [7, 8, 9] };
+// @ts-expect-error The type 1 compatibility fallback is no longer accepted.
+const bdef2WithSdef: PmxVertex = { ...sdef, type: 1 };
+// @ts-expect-error SDEF vectors have exactly three components.
+const shortSdefVector: PmxVertex = { ...sdef, skinC: [1, 2] };
+// @ts-expect-error SDEF requires both bone indices.
+const shortSdefIndices: PmxVertex = { ...sdef, skinIndices: [0] };
+// @ts-expect-error SDEF requires both weights.
+const shortSdefWeights: PmxVertex = { ...sdef, skinWeights: [1] };
+// @ts-expect-error SDEF requires all three vectors.
+const incompleteSdef: PmxVertex = { position: [1, 2, 3], normal: [0, 1, 2], uv: [0, 0], auvs: [],
+  edgeRatio: 1, type: 3, skinIndices: [0, 1], skinWeights: [0.25, 0.75] };

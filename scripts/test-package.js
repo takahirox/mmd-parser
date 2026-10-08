@@ -80,7 +80,7 @@ try {
   });
   console.log('Package contents (' + files.length + ' files):\n' + files.sort().join('\n'));
 
-  ['consumer.js', 'consumer.mjs', 'consumer.ts', 'consumer-pmx.js', 'fixtures.js'].forEach(function(file) {
+  ['consumer.js', 'consumer.mjs', 'consumer.ts', 'consumer-pmx.js', 'pmx-sdef.js', 'fixtures.js'].forEach(function(file) {
     fs.copyFileSync(path.join(root, 'test', file), path.join(consumer, file));
   });
   execFileSync(process.execPath, ['consumer.js'], { cwd: consumer, stdio: 'inherit' });

@@ -57,13 +57,14 @@ export interface PmdVertex extends Vertex {
   skinWeights: Vector2;
   edgeFlag: number;
 }
-/** SDEF keeps the original type 1 fallback while requiring all three vectors. */
+/** Original model-space SDEF vectors, without shader-specific corrections. */
 export interface PmxSdefData { skinC: Vector3; skinR0: Vector3; skinR1: Vector3; }
 type NoSdefData = { skinC?: never; skinR0?: never; skinR1?: never };
 export type PmxSkinning =
   | ({ type: 0; skinIndices: [number]; skinWeights: [number] } & NoSdefData)
-  | ({ type: 1; skinIndices: Vector2; skinWeights: Vector2 } & (NoSdefData | PmxSdefData))
-  | ({ type: 2; skinIndices: Vector4; skinWeights: Vector4 } & NoSdefData);
+  | ({ type: 1; skinIndices: Vector2; skinWeights: Vector2 } & NoSdefData)
+  | ({ type: 2; skinIndices: Vector4; skinWeights: Vector4 } & NoSdefData)
+  | ({ type: 3; skinIndices: Vector2; skinWeights: Vector2 } & PmxSdefData);
 export type PmxVertex = Vertex & PmxSkinning & { auvs: Vector4[]; edgeRatio: number };
 export interface Face { indices: Vector3; }
 export interface PmdMaterial {
