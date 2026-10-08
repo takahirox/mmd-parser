@@ -10406,7 +10406,6 @@ var Parser = /** @class */ (function () {
             helper.leftToRightIndexOrder(at(model.faces, i).indices);
         for (var i = 0; i < model.metadata.boneCount; i++)
             helper.leftToRightVector3(at(model.bones, i).position);
-        // Preserve the existing conversion of only vertex morphs for PMX.
         if (isPmxModel(model)) {
             for (var i = 0; i < model.metadata.morphCount; i++) {
                 var morph = at(model.morphs, i);
@@ -10416,12 +10415,19 @@ var Parser = /** @class */ (function () {
                         helper.leftToRightVector3(element.position);
                     }
                 }
+                else if (morph.type === 2) {
+                    for (var _b = 0, _c = morph.elements; _b < _c.length; _b++) {
+                        var element = _c[_b];
+                        helper.leftToRightVector3(element.position);
+                        helper.leftToRightQuaternion(element.rotation);
+                    }
+                }
             }
         }
         else {
             for (var i = 0; i < model.metadata.morphCount; i++) {
-                for (var _b = 0, _c = at(model.morphs, i).elements; _b < _c.length; _b++) {
-                    var element = _c[_b];
+                for (var _d = 0, _e = at(model.morphs, i).elements; _d < _e.length; _d++) {
+                    var element = _e[_d];
                     helper.leftToRightVector3(element.position);
                 }
             }

@@ -539,12 +539,16 @@ export class Parser {
     }
     for ( let i = 0; i < model.metadata.faceCount; i++ ) helper.leftToRightIndexOrder( at( model.faces, i ).indices );
     for ( let i = 0; i < model.metadata.boneCount; i++ ) helper.leftToRightVector3( at<PmdBone | PmxBone>( model.bones, i ).position );
-    // Preserve the existing conversion of only vertex morphs for PMX.
     if ( isPmxModel( model ) ) {
       for ( let i = 0; i < model.metadata.morphCount; i++ ) {
         const morph = at( model.morphs, i );
         if ( morph.type === 1 ) {
           for ( const element of morph.elements ) helper.leftToRightVector3( element.position );
+        } else if ( morph.type === 2 ) {
+          for ( const element of morph.elements ) {
+            helper.leftToRightVector3( element.position );
+            helper.leftToRightQuaternion( element.rotation );
+          }
         }
       }
     } else {
