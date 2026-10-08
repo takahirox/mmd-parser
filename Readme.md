@@ -165,9 +165,16 @@ const position: Vector3 | undefined = model.vertices[0]?.position;
 
 The types describe existing runtime behavior: English PMD fields are optional,
 merged VMD metadata omits `magic`, and coordinate state is `left` or `right`.
-PMX skinning and supported morphs use variant records and fixed tuples. SDEF
-continues to return type 1 with its extra vectors; unsupported morph types retain
-empty element arrays. Existing PMX text decoding and version checks are preserved.
+PMX skinning and supported morphs use variant records and fixed tuples. Skinning
+types are BDEF1 (`0`), BDEF2 (`1`), BDEF4 (`2`), and SDEF (`3`). SDEF exposes two
+bone indices, two weights, and the three-component `skinC`, `skinR0`, and `skinR1`
+vectors. This corrects the earlier SDEF type `1` fallback; consumers should use
+`vertex.type === 3` to access SDEF data. These vectors retain their original parsed
+values, without shader-specific corrections. `parsePmx(buffer, true)` and
+`leftToRightModel` negate their Z components along with vertex positions and
+normals; converting an already right-handed model has no effect. Unsupported morph
+types retain empty element arrays. Existing PMX text decoding and version checks
+are preserved.
 
 
 ## Copyright

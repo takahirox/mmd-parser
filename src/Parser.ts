@@ -217,11 +217,10 @@ function readPmxVertex ( dv: DataViewEx, metadata: PmxHeader ): PmxVertex {
     case 3: {
       const skinIndices = dv.getIndexArray( indexSize, 2 );
       const weight = dv.getFloat32();
-      // Preserve SDEF's existing BDEF2 fallback and the extra vectors.
       const skinC = dv.getFloat32Array( 3 );
       const skinR0 = dv.getFloat32Array( 3 );
       const skinR1 = dv.getFloat32Array( 3 );
-      return { ...base, type: 1, skinIndices, skinWeights: [weight, 1 - weight],
+      return { ...base, type, skinIndices, skinWeights: [weight, 1 - weight],
         skinC, skinR0, skinR1, edgeRatio: dv.getFloat32() };
     }
     default:
@@ -532,6 +531,11 @@ export class Parser {
       const vertex = at<PmdVertex | PmxVertex>( model.vertices, i );
       helper.leftToRightVector3( vertex.position );
       helper.leftToRightVector3( vertex.normal );
+      if ( 'type' in vertex && vertex.type === 3 ) {
+        helper.leftToRightVector3( vertex.skinC );
+        helper.leftToRightVector3( vertex.skinR0 );
+        helper.leftToRightVector3( vertex.skinR1 );
+      }
     }
     for ( let i = 0; i < model.metadata.faceCount; i++ ) helper.leftToRightIndexOrder( at( model.faces, i ).indices );
     for ( let i = 0; i < model.metadata.boneCount; i++ ) helper.leftToRightVector3( at<PmdBone | PmxBone>( model.bones, i ).position );

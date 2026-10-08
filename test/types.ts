@@ -88,6 +88,32 @@ new CharsetEncoder().s2u('text');
 const magic: string = merged.metadata.magic;
 
 // @ts-expect-error SDEF's retained vectors must be present together.
-const partialSdef: PmxVertex = { position, normal: position, uv, auvs: [], edgeRatio: 1, type: 1, skinIndices: [0, 1], skinWeights: [0.5, 0.5], skinC: position };
-// @ts-expect-error SDEF fields only belong to the existing type 1 fallback.
-const wrongSdefType: PmxVertex = { position, normal: position, uv, auvs: [], edgeRatio: 1, type: 0, skinIndices: [0], skinWeights: [1], skinC: position, skinR0: position, skinR1: position };
+const partialSdef: PmxVertex = { position, normal: position, uv, auvs: [], edgeRatio: 1, type: 3, skinIndices: [0, 1], skinWeights: [0.5, 0.5], skinC: position };
+// @ts-expect-error SDEF fields belong to type 3, not BDEF2.
+const wrongSdefType: PmxVertex = { position, normal: position, uv, auvs: [], edgeRatio: 1, type: 1, skinIndices: [0, 1], skinWeights: [0.5, 0.5], skinC: position, skinR0: position, skinR1: position };
+
+const sdef: Extract<PmxVertex, { type: 3 }> = { position, normal: position, uv, auvs: [], edgeRatio: 1,
+  type: 3, skinIndices: [0, 1], skinWeights: [0.25, 0.75], skinC: position, skinR0: position, skinR1: position };
+function skinningData(vertex: PmxVertex): void {
+  if (vertex.type === 3) {
+    const indices: Vector2 = vertex.skinIndices;
+    const weights: Vector2 = vertex.skinWeights;
+    const c: Vector3 = vertex.skinC;
+    const r0: Vector3 = vertex.skinR0;
+    const r1: Vector3 = vertex.skinR1;
+    // @ts-expect-error SDEF indices have exactly two components.
+    const fourIndices: Vector4 = vertex.skinIndices;
+  } else if (vertex.type === 1) {
+    const indices: Vector2 = vertex.skinIndices;
+    const weights: Vector2 = vertex.skinWeights;
+    // @ts-expect-error BDEF2 has no SDEF vector.
+    const c: Vector3 = vertex.skinC;
+  }
+}
+skinningData(sdef);
+// @ts-expect-error SDEF requires two bone indices.
+const shortSdefIndices: PmxVertex = { ...sdef, skinIndices: [0] };
+// @ts-expect-error SDEF requires two weights.
+const shortSdefWeights: PmxVertex = { ...sdef, skinWeights: [1] };
+// @ts-expect-error SDEF vectors have exactly three components.
+const shortSdefVector: PmxVertex = { ...sdef, skinR1: [1, 2] };

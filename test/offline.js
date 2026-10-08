@@ -13,7 +13,19 @@ function check(api, label) {
   var parser = new api.Parser();
   function parse(method, input, right) {
     var result = parser[method](input, right);
-    if (baseline) assert.deepStrictEqual(result, new baseline.Parser()[method](input, right));
+    if (baseline) {
+      var expected = new baseline.Parser()[method](input, right);
+      // Account for the intentional SDEF correction when comparing older bundles.
+      if (method === 'parsePmx') expected.vertices.forEach(function(vertex) {
+        if (vertex.type === 1 && vertex.skinC) {
+          vertex.type = 3;
+          if (right) [vertex.skinC, vertex.skinR0, vertex.skinR1].forEach(function(vector) {
+            vector[2] = -vector[2];
+          });
+        }
+      });
+      assert.deepStrictEqual(result, expected);
+    }
     return result;
   }
   [false, true].forEach(function(english) {
@@ -41,7 +53,7 @@ function check(api, label) {
     // 2.1 as a binary float fails the existing strict version comparison.
     var model = parse('parsePmx', fixtures.pmx(size, 2, true));
     assert.strictEqual(model.metadata.boneIndexSize, size);
-    assert.deepStrictEqual(model.vertices.map(function(v) { return v.type; }), [0, 1, 2, 1]);
+    assert.deepStrictEqual(model.vertices.map(function(v) { return v.type; }), [0, 1, 2, 3]);
     assert.deepStrictEqual(model.vertices[0].skinIndices, [-1]);
     assert.deepStrictEqual(model.vertices[3].skinC, [1, 2, 3]);
     assert.deepStrictEqual(model.vertices[3].skinWeights, [0.25, 0.75]);
@@ -61,6 +73,7 @@ function check(api, label) {
     parser.leftToRightModel(right);
     assert.strictEqual(JSON.stringify(right), snapshot);
   });
+  require('./pmx-sdef')(api.Parser);
   [1, 2, 4].forEach(function(size) {
     [4, 5, 6, 7].forEach(function(type) {
       // These newly supported morphs intentionally differ from the old baseline.
@@ -133,6 +146,11 @@ async function main() {
   var browser = new context.MMDParser.Parser().parsePmd(fixtures.pmd(false));
   assert.strictEqual(browser.metadata.vertexCount, 3);
   assert.strictEqual(browser.vertices[0].position[2], 3);
+  var browserPmx = new context.MMDParser.Parser().parsePmx(fixtures.pmx(1, 2), true);
+  assert.strictEqual(browserPmx.vertices[3].type, 3);
+  ['skinC', 'skinR0', 'skinR1'].forEach(function(key, i) {
+    assert.strictEqual(browserPmx.vertices[3][key][2], -3 * (i + 1));
+  });
   console.log('browser global: bundle smoke check passed');
 }
 main().catch(function(error) { console.error(error); process.exitCode = 1; });

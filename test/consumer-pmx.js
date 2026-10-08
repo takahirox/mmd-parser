@@ -1,8 +1,10 @@
 var assert = require('assert');
 var fixtures = require('./fixtures');
 
-// Exercise the #17 regression against the installed tarball, with no source fallback.
+// Exercise PMX regressions against the installed tarball, with no source fallback.
 module.exports = function(Parser) {
+  require('./pmx-sdef')(Parser);
+  console.log('Installed PMX skinning: BDEF1/BDEF2/BDEF4/SDEF, all index widths and coordinate modes passed');
   var parser = new Parser();
   [1, 2, 4].forEach(function(size) {
     [4, 5, 6, 7].forEach(function(type) {

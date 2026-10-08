@@ -10078,11 +10078,10 @@ function readPmxVertex(dv, metadata) {
         case 3: {
             var skinIndices = dv.getIndexArray(indexSize, 2);
             var weight = dv.getFloat32();
-            // Preserve SDEF's existing BDEF2 fallback and the extra vectors.
             var skinC = dv.getFloat32Array(3);
             var skinR0 = dv.getFloat32Array(3);
             var skinR1 = dv.getFloat32Array(3);
-            return __assign(__assign({}, base), { type: 1, skinIndices: skinIndices, skinWeights: [weight, 1 - weight], skinC: skinC, skinR0: skinR0, skinR1: skinR1, edgeRatio: dv.getFloat32() });
+            return __assign(__assign({}, base), { type: type, skinIndices: skinIndices, skinWeights: [weight, 1 - weight], skinC: skinC, skinR0: skinR0, skinR1: skinR1, edgeRatio: dv.getFloat32() });
         }
         default:
             throw 'unsupport bone type ' + type + ' exception.';
@@ -10397,6 +10396,11 @@ var Parser = /** @class */ (function () {
             var vertex = at(model.vertices, i);
             helper.leftToRightVector3(vertex.position);
             helper.leftToRightVector3(vertex.normal);
+            if ('type' in vertex && vertex.type === 3) {
+                helper.leftToRightVector3(vertex.skinC);
+                helper.leftToRightVector3(vertex.skinR0);
+                helper.leftToRightVector3(vertex.skinR1);
+            }
         }
         for (var i = 0; i < model.metadata.faceCount; i++)
             helper.leftToRightIndexOrder(at(model.faces, i).indices);
