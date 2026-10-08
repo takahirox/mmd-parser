@@ -172,9 +172,13 @@ vectors. This corrects the earlier SDEF type `1` fallback; consumers should use
 `vertex.type === 3` to access SDEF data. These vectors retain their original parsed
 values, without shader-specific corrections. `parsePmx(buffer, true)` and
 `leftToRightModel` negate their Z components along with vertex positions and
-normals; converting an already right-handed model has no effect. Unsupported morph
-types retain empty element arrays. Existing PMX text decoding and version checks
-are preserved.
+normals; converting an already right-handed model has no effect. PMX bone morphs
+(`type === 2`) retain `{ index, position, rotation }` elements. Right-handed
+conversion negates translation Z and quaternion X/Y, preserving quaternion Z/W,
+as for VMD bone motions and VPD poses. Parsing with conversion omitted or `false`
+preserves the original values. Group references and UV/material morph payloads
+remain unchanged. Unsupported morph types retain empty element arrays. Existing
+PMX text decoding and version checks are preserved.
 
 
 ## Copyright

@@ -24,6 +24,17 @@ function check(api, label) {
           });
         }
       });
+      // Bone morph coordinates now follow the VMD/VPD convention as well.
+      if (method === 'parsePmx' && right) {
+        var rawBaseline = new baseline.Parser().parsePmx(input);
+        expected.morphs.forEach(function(morph, i) {
+          if (morph.type === 2) morph.elements = rawBaseline.morphs[i].elements.map(function(element) {
+            return { index: element.index,
+              position: [element.position[0], element.position[1], -element.position[2]],
+              rotation: [-element.rotation[0], -element.rotation[1], element.rotation[2], element.rotation[3]] };
+          });
+        });
+      }
       assert.deepStrictEqual(result, expected);
     }
     return result;
@@ -68,12 +79,13 @@ function check(api, label) {
     model.morphs.slice(5).forEach(function(m) { assert.deepStrictEqual(m.elements, []); });
     var right = parse('parsePmx', fixtures.pmx(size, 2, true), true);
     assert.deepStrictEqual(right.morphs[1].elements[0].position, [1, 2, -3]);
-    assert.deepStrictEqual(right.morphs[2].elements[0].position, [1, 2, 3]);
+    assert.deepStrictEqual(right.morphs[2].elements[0].position, [1, 2, -3]);
     var snapshot = JSON.stringify(right);
     parser.leftToRightModel(right);
     assert.strictEqual(JSON.stringify(right), snapshot);
   });
   require('./pmx-sdef')(api.Parser);
+  require('./pmx-bone-morph')(api.Parser);
   [1, 2, 4].forEach(function(size) {
     [4, 5, 6, 7].forEach(function(type) {
       // These newly supported morphs intentionally differ from the old baseline.
@@ -151,6 +163,11 @@ async function main() {
   ['skinC', 'skinR0', 'skinR1'].forEach(function(key, i) {
     assert.strictEqual(browserPmx.vertices[3][key][2], -3 * (i + 1));
   });
+  assert.strictEqual(browserPmx.morphs[2].elements[0].position[2], -3);
+  assert.strictEqual(browserPmx.morphs[2].elements[0].rotation[0], -0.125);
+  assert.strictEqual(browserPmx.morphs[2].elements[0].rotation[1], 0.25);
+  assert.strictEqual(browserPmx.morphs[2].elements[0].rotation[2], 0.5);
+  assert.strictEqual(browserPmx.morphs[2].elements[0].rotation[3], 0.75);
   console.log('browser global: bundle smoke check passed');
 }
 main().catch(function(error) { console.error(error); process.exitCode = 1; });

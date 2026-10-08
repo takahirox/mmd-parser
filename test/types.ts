@@ -42,6 +42,25 @@ const morph: PmxMorph = { name: '', englishName: '', panel: 0, elementCount: 1,
   type: 1, elements: [{ index: 0, position }] };
 morphPosition(morph);
 
+const boneMorph: Extract<PmxMorph, { type: 2 }> = { ...morph, type: 2,
+  elements: [{ index: 1, position, rotation: quaternion }] };
+function boneMorphData(morph: PmxMorph): void {
+  if (morph.type === 2) {
+    for (const element of morph.elements) {
+      const index: number = element.index;
+      const translation: Vector3 = element.position;
+      const rotation: Quaternion = element.rotation;
+      // @ts-expect-error Bone offsets have no morph weight or group ratio.
+      const ratio: number = element.ratio;
+    }
+  }
+}
+boneMorphData(boneMorph);
+// @ts-expect-error A bone morph offset requires a quaternion.
+const missingBoneRotation: PmxMorph = { ...boneMorph, elements: [{ index: 0, position }] };
+// @ts-expect-error Bone morph quaternions have four components.
+const shortBoneRotation: PmxMorph = { ...boneMorph, elements: [{ index: 0, position, rotation: position }] };
+
 // Each additional-UV discriminator exposes non-empty four-component offsets.
 const additionalUv4: Extract<PmxMorph, { type: 4 }> = { ...morph, type: 4, elements: [{ index: 0, uv: quaternion }] };
 const additionalUv5: Extract<PmxMorph, { type: 5 }> = { ...morph, type: 5, elements: [{ index: 0, uv: quaternion }] };

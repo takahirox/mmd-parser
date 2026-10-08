@@ -112,12 +112,16 @@ function pmx(size, version, unsupported) {
   var morphTypes = unsupported ? [0, 1, 2, 3, 8, 9, 10, 255] : [0, 1, 2, 3, 8];
   w.u32(morphTypes.length);
   morphTypes.forEach(function(morphType) {
-    w.text('morph').text('english').u8(1).u8(morphType).u32(1);
+    w.text('morph').text('english').u8(1).u8(morphType).u32(morphType === 2 ? 2 : 1);
     if ([0, 1, 2, 3, 8].indexOf(morphType) === -1) return; // Existing reader consumes no bytes.
-    w.index(size, 0);
+    w.index(size, morphType === 0 ? 2 : morphType === 2 ? 1 : 0);
     if (morphType === 0) w.f32(0.5);
     else if (morphType === 1) w.floats([1, 2, 3]);
-    else if (morphType === 2) w.floats([1, 2, 3]).floats([0, 0, 0, 1]);
+    else if (morphType === 2) {
+      // Two ordered bone offsets with nonzero, asymmetric, exactly representable values.
+      w.floats([1, 2, 3]).floats([0.125, -0.25, 0.5, 0.75]);
+      w.index(size, 0).floats([-4, 5, -6]).floats([-0.5, 0.125, -0.25, 0.875]);
+    }
     else if (morphType === 3) w.floats([1, 2, 3, 4]);
     else {
       w.u8(1).floats([1, 2, 3, 4]).floats([1, 2, 3]).f32(2).floats([4, 5, 6])

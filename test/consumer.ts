@@ -1,5 +1,5 @@
 import { MMDParser, Parser, CharsetEncoder } from 'mmd-parser';
-import type { Pmd, Pmx, Vmd, Vpd, PmxVertex, Vector2, Vector3 } from 'mmd-parser';
+import type { Pmd, Pmx, Vmd, Vpd, PmxVertex, PmxMorph, Vector2, Vector3, Quaternion } from 'mmd-parser';
 
 const parser: Parser = new MMDParser.Parser();
 const buffer = new ArrayBuffer(0);
@@ -13,6 +13,26 @@ parser.leftToRightVmd(parser.mergeVmds([vmd]));
 parser.leftToRightVpd(vpd);
 new Parser();
 const decoded: string = new CharsetEncoder().s2u(new Uint8Array(0));
+
+// Bone morph offsets retain their typed, weight-independent payload in the package.
+function checkBoneMorph(morph: PmxMorph): void {
+  if (morph.type === 2) {
+    for (const element of morph.elements) {
+      const index: number = element.index;
+      const translation: Vector3 = element.position;
+      const rotation: Quaternion = element.rotation;
+      // @ts-expect-error Bone offsets have no morph weight or group ratio.
+      const ratio: number = element.ratio;
+    }
+  }
+}
+pmx.morphs.forEach(checkBoneMorph);
+const boneMorph: Extract<PmxMorph, { type: 2 }> = { name: 'bone', englishName: '', panel: 1,
+  type: 2, elementCount: 1, elements: [{ index: 1, position: [1, 2, 3], rotation: [0.125, -0.25, 0.5, 0.75] }] };
+// @ts-expect-error Bone morph offsets require both translation and rotation.
+const missingBoneRotation: PmxMorph = { ...boneMorph, elements: [{ index: 0, position: [1, 2, 3] }] };
+// @ts-expect-error Bone morph quaternions have exactly four components.
+const shortBoneRotation: PmxMorph = { ...boneMorph, elements: [{ index: 0, position: [1, 2, 3], rotation: [1, 2, 3] }] };
 
 // Confirm the installed declarations enforce types rather than resolving to any.
 // @ts-expect-error Binary parsers require an ArrayBuffer.
