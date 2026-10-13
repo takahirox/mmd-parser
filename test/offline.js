@@ -61,7 +61,8 @@ function check(api, label) {
     assert.strictEqual(JSON.stringify(right), snapshot);
   });
   [1, 2, 4].forEach(function(size) {
-    // 2.1 as a binary float fails the existing strict version comparison.
+    // Legacy malformed unsupported-morph records test only the empty-array
+    // fallback, not support for PMX 2.1 morph payloads.
     var model = parse('parsePmx', fixtures.pmx(size, 2, true));
     assert.strictEqual(model.metadata.boneIndexSize, size);
     assert.deepStrictEqual(model.vertices.map(function(v) { return v.type; }), [0, 1, 2, 3]);
@@ -86,6 +87,7 @@ function check(api, label) {
   });
   require('./pmx-sdef')(api.Parser);
   require('./pmx-bone-morph')(api.Parser);
+  require('./pmx-version')(api.Parser);
   [1, 2, 4].forEach(function(size) {
     [4, 5, 6, 7].forEach(function(type) {
       // These newly supported morphs intentionally differ from the old baseline.
@@ -138,7 +140,6 @@ function check(api, label) {
   });
   assert.throws(function() { parser.parseVpd('invalid'); });
   assert.throws(function() { parser.parseVpd(fixtures.vpd.replace('0.25,0.5,0.75,1.0;', '')); });
-  assert.throws(function() { parser.parsePmx(fixtures.pmx(1, 2.1)); });
   // Reject invalid index-size bytes at the binary boundary.
   var invalid = fixtures.pmx(1, 2);
   new DataView(invalid).setUint8(11, 3);
@@ -158,6 +159,7 @@ async function main() {
   var browser = new context.MMDParser.Parser().parsePmd(fixtures.pmd(false));
   assert.strictEqual(browser.metadata.vertexCount, 3);
   assert.strictEqual(browser.vertices[0].position[2], 3);
+  assert.strictEqual(new context.MMDParser.Parser().parsePmx(fixtures.pmxVersion(2.1)).metadata.version, Math.fround(2.1));
   var browserPmx = new context.MMDParser.Parser().parsePmx(fixtures.pmx(1, 2), true);
   assert.strictEqual(browserPmx.vertices[3].type, 3);
   ['skinC', 'skinR0', 'skinR1'].forEach(function(key, i) {

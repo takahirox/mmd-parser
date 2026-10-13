@@ -406,7 +406,8 @@ export class Parser {
     const magic = dv.getChars( 4 );
     if ( magic !== 'PMX ' ) throw 'PMX file magic is not PMX , but ' + magic;
     const version = dv.getFloat32();
-    if ( version !== 2.0 && version !== 2.1 ) throw 'PMX version ' + version + ' is not supported.';
+    // Compare exact float32 encodings; 2.1 is not exactly representable.
+    if ( version !== 2.0 && version !== Math.fround( 2.1 ) ) throw 'PMX version ' + version + ' is not supported.';
     const header = {
       magic, version, headerSize: dv.getUint8(), encoding: dv.getUint8(), additionalUvNum: dv.getUint8(),
       vertexIndexSize: dv.getIndexSize(), textureIndexSize: dv.getIndexSize(),

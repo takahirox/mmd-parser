@@ -29,7 +29,8 @@
     "prepack": "npm run build-uglify",
     "prepublishOnly": "npm run build-uglify && npm run typecheck && npm run test:offline && npm run test:package",
     "dev": "node scripts/dev.js",
-    "test": "node test/index.js",
+    "test": "node test/offline.js",
+    "test:samples": "node test/index.js",
     "typecheck": "tsc --noEmit && tsc -p test/tsconfig.json",
     "test:offline": "node test/offline.js",
     "test:package": "node scripts/test-package.js"

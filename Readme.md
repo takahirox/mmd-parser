@@ -75,6 +75,21 @@ separate maintainer actions.
 
 ## NPM
 
+### PMX version support
+
+`parsePmx()` accepts the exact float32 encodings of PMX 2.0 and 2.1. The
+`metadata.version` value retains the number read from the file: `2` for 2.0
+and `Math.fround(2.1)` (`2.0999999046325684`) for 2.1. Other versions, including
+neighboring float32 values and nonfinite values, are rejected.
+
+Accepting the PMX 2.1 header allows parsing structures shared with PMX 2.0;
+it does not provide full PMX 2.1 support. QDEF (skinning type 4), flip/impulse
+morphs (types 9/10), soft bodies, and point/line drawing remain unsupported.
+The parser stops after joints and does not read or validate a trailing PMX 2.1
+soft-body section. The generated 2.1 regression fixture includes a zero
+soft-body count, and its assertions cover only the common sections. Successful
+parsing of this fixture does not establish support for 2.1-only payloads.
+
 ### How to install
 ```
 $ npm install mmd-parser
@@ -100,13 +115,15 @@ compilation.
 The offline tests use small synthetic PMD, PMX, VMD, and VPD fixtures with
 assertions against all four rebuilt bundles and a browser global smoke check.
 They cover the parser's currently supported sections; they do not establish
-support for additional PMX features. `npm test` retains the original sample
-smoke script, which downloads real PMD, VMD, and VPD samples from
+support for additional PMX features. `npm test` runs the same offline suite,
+including exact PMX 2.0/2.1 version recognition and rejection of invalid versions.
+`npm run test:samples` retains the original optional sample smoke script,
+which downloads real PMD, VMD, and VPD samples from
 `raw.githubusercontent.com`, pinned to Three.js r171 commit
 `2898f5b1ba10b1e94174c0a62d072f5f7b80442c`, as in
 [three-mmd-loader](https://github.com/takahirox/three-mmd-loader/blob/main/examples/README.md#assets-and-credits).
 It requires network access and does not exercise PMX. `npm run all` runs the
-build, type checks, offline tests, and this sample script in sequence.
+build, type checks, and offline tests in sequence.
 
 After building, `npm run test:package` packs and inspects the npm artifact, installs
 it in a temporary consumer outside the repository, and checks CommonJS and native
@@ -178,7 +195,8 @@ conversion negates translation Z and quaternion X/Y, preserving quaternion Z/W,
 as for VMD bone motions and VPD poses. Parsing with conversion omitted or `false`
 preserves the original values. Group references and UV/material morph payloads
 remain unchanged. Unsupported morph types retain empty element arrays. Existing
-PMX text decoding and version checks are preserved.
+PMX text decoding is unchanged; see the version support and feature limitations
+above.
 
 
 ## Copyright
