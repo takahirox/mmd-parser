@@ -10261,7 +10261,8 @@ var Parser = /** @class */ (function () {
         if (magic !== 'PMX ')
             throw 'PMX file magic is not PMX , but ' + magic;
         var version = dv.getFloat32();
-        if (version !== 2.0 && version !== 2.1)
+        // Compare exact float32 encodings; 2.1 is not exactly representable.
+        if (version !== 2.0 && version !== Math.fround(2.1))
             throw 'PMX version ' + version + ' is not supported.';
         var header = {
             magic: magic,

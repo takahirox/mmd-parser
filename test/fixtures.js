@@ -158,6 +158,30 @@ function pmxAdditionalUv(size, type) {
   w.u32(0).u32(0); // Rigid bodies and constraints.
   return w.buffer();
 }
+// A valid triangle using only common PMX 2.0/2.1 structures. Unlike the older
+// broad pmx fixture, all vertex/bone/material references are within bounds.
+function pmxVersion(version) {
+  var w = new Writer();
+  w.chars('PMX ', 4).f32(version).u8(8).bytes([0, 0, 1, 1, 1, 1, 1, 1]);
+  w.text('version fixture').text('version fixture').text('').text('').u32(3);
+  [[0, 0, 1], [1, 0, 1], [0, 1, 1]].forEach(function(position) {
+    w.floats(position).floats([0, 0, 1]).floats([0, 0]).u8(0).i8(0).f32(1);
+  });
+  w.u32(3).u8(0).u8(1).u8(2).u32(0).u32(1); // Faces, textures, materials.
+  w.text('material').text('material').floats([1, 1, 1, 1]).floats([0, 0, 0])
+    .f32(0).floats([0, 0, 0]).u8(0).floats([0, 0, 0, 1]).f32(1)
+    .i8(-1).i8(-1).u8(0).u8(1).u8(0).text('').u32(3);
+  w.u32(1).text('bone').text('bone').floats([0, 0, 0]).i8(-1).u32(0).u16(0).floats([0, 1, 0]);
+  w.u32(1).text('vertex morph').text('vertex morph').u8(1).u8(1).u32(1)
+    .u8(2).floats([0.25, 0.5, 0.75]);
+  w.u32(1).text('frame').text('frame').u8(0).u32(2).u8(0).i8(0).u8(1).i8(0);
+  w.u32(0).u32(0); // Rigid bodies and joints.
+  // PMX 2.1 includes a trailing soft-body count. The parser stops at joints;
+  // tests validate the common sections, not consumption of this zero count
+  // or support for nonempty soft bodies or other 2.1-only features.
+  if (version === 2.1) w.u32(0);
+  return w.buffer();
+}
 function vmd() {
   var w = new Writer();
   w.chars('Vocaloid Motion Data 0002', 30).chars('model', 20).u32(1)
@@ -169,4 +193,4 @@ function vmd() {
   return w.buffer();
 }
 var vpd = 'Vocaloid Pose Data file\n\nmodel.pmd;\n1;\nBone0{bone\n1.0,2.0,3.0;\n0.25,0.5,0.75,1.0;\n}\n';
-module.exports = { Writer: Writer, pmd: pmd, pmx: pmx, pmxAdditionalUv: pmxAdditionalUv, vmd: vmd, vpd: vpd };
+module.exports = { Writer: Writer, pmd: pmd, pmx: pmx, pmxAdditionalUv: pmxAdditionalUv, pmxVersion: pmxVersion, vmd: vmd, vpd: vpd };

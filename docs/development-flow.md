@@ -50,11 +50,12 @@ change unless they are explicitly in scope. The scripts in
 | `npm run build-uglify` | Runs `build`, then UglifyJS to produce `build/mmdparser.min.js`. |
 | `npm run prepack` | Runs `build-uglify`; npm invokes it automatically before packing or publishing. |
 | `npm run prepublishOnly` | Builds, type-checks, runs offline fixtures, and validates the installed package; npm invokes it automatically before publication, including `npm publish --dry-run`. |
-| `npm test` | Runs `node test/index.js` against `build/mmdparser.js`. |
+| `npm test` | Runs the offline fixture suite, including PMX 2.0/2.1 float32 version regression checks. |
+| `npm run test:samples` | Optionally runs `node test/index.js` against `build/mmdparser.js`, downloading external PMD/VMD/VPD samples. |
 | `npm run typecheck` | Checks the source under `strict` and `noUncheckedIndexedAccess`, then compile-only contracts against the generated public declarations. Rebuild after source changes. |
 | `npm run test:offline` | Runs assertions using local PMD/PMX/VMD/VPD fixtures against the UMD, minified UMD, browser ES module, and native ESM bundles, plus a browser global smoke check. |
 | `npm run test:package` | Packs the completed build with lifecycle scripts disabled, inspects the npm package, installs it outside the repository, and checks CommonJS and native Node ESM exports and strict TypeScript imports using legacy, Node16, NodeNext, and bundler resolution from the package root. Requires a completed build; optionally accepts an existing tarball path after `--`. |
-| `npm run all` | Runs `build-uglify`, `typecheck`, `test:offline`, and the network-dependent `test` in sequence. |
+| `npm run all` | Runs `build-uglify`, `typecheck`, `test:offline`, and `test` in sequence without external sample downloads. |
 | `npm run dev` | Watches TypeScript, rebuilding bundles and declarations after successful compilations; it is not a completed validation check. |
 
 For source or distributed-bundle changes, run the applicable builds,
@@ -67,7 +68,7 @@ keeps the untyped charset dependency from propagating untyped values into source
 or consumer declarations. Keep parser records complete at construction and
 use fixed-length reader overloads rather than assertions for ordinary data.
 
-The current test script downloads PMD, VMD, and VPD samples from external
+The optional `npm run test:samples` script downloads PMD, VMD, and VPD samples from external
 `raw.githubusercontent.com` URLs pinned to Three.js r171 commit
 `2898f5b1ba10b1e94174c0a62d072f5f7b80442c` and logs parsed metadata; it has no
 assertions and does not exercise PMX. Inspect output to confirm samples actually

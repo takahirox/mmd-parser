@@ -3,6 +3,8 @@ var fixtures = require('./fixtures');
 
 // Exercise PMX regressions against the installed tarball, with no source fallback.
 module.exports = function(Parser) {
+  require('./pmx-version')(Parser);
+  console.log('Installed PMX versions: exact 2.0/2.1 float32 headers, common sections and invalid versions passed');
   require('./pmx-bone-morph')(Parser);
   console.log('Installed PMX bone morphs: translations, quaternions, mixed morphs and idempotence passed');
   require('./pmx-sdef')(Parser);
