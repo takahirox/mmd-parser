@@ -24,9 +24,10 @@ routine human-only or post-merge checks to every Issue.
 
 ## Implement a focused change
 
-1. Read the Issue, repository instructions, and relevant source and tests. Work
-   from the selected upstream commit; for a manual contribution, start from
-   current `master` on a working branch.
+1. Read the source Issue's problem, expected outcome, and acceptance criteria,
+   repository instructions, and relevant source and tests. Work from the selected
+   upstream commit; for a manual contribution, start from current `master` on a
+   working branch.
 2. Keep changes within the Issue. The public exports are in `index.ts`; parser
    code is in `src/`, distributed bundles in `build/`, the existing test script in
    `test/index.js`, and browser usage in `index.html` and `Readme.md`.
@@ -36,6 +37,15 @@ routine human-only or post-merge checks to every Issue.
 4. Inspect the diff for unrelated files and generated changes. Do not upgrade
    dependencies or change CI/deployment infrastructure as incidental work.
    Documentation-only tasks should stay within templates and documentation.
+
+Prefer the smallest coherent change and design that fully satisfies the source
+Issue. Avoid overengineering: added complexity is not automatically beneficial,
+even when it concerns a relevant feature. Follow appropriate existing
+architectural conventions and explain necessary complexity in terms of the
+actual Issue. Simplicity must not excuse omitted requirements, error handling,
+or necessary regression coverage. Use the
+[review guidelines](review-guidelines.md#review-the-implementation-and-evidence)
+to check both missing work and unjustified scope or complexity.
 
 ## Build and validate
 
@@ -105,11 +115,15 @@ metadata or checkboxes for checks that cannot yet run.
 
 ## Review, merge, and Issue closure
 
-Follow the [review guidelines](review-guidelines.md). Review the exact PR head,
-confirm applicable pre-merge checks and a clean merge into current `master`, and
-approve when the implementation and those checks are sufficient. Recheck changed
-code and affected validation if the head changes before merge. Merge only when
-authorized by the task or workflow and applicable repository requirements allow it.
+Follow the [review guidelines](review-guidelines.md). Ask: **Does this PR completely
+solve the Issue, without unnecessary scope or complexity?** Review the exact PR
+head, confirm applicable pre-merge checks and a clean merge into current `master`,
+and approve when the implementation and those checks are sufficient. Request
+focused fixes for concrete omissions or unjustified additions, then review the
+updated PR again. Optional improvements remain suggestions rather than new
+acceptance criteria. Recheck changed code and affected validation if the head
+changes before merge. Merge only when authorized by the task or workflow and
+applicable repository requirements allow it.
 
 In the current ProjectWeave flow, the publication node adds `Closes #N` to the PR,
 and the merge/close nodes close the source Issue. Preserve that closing reference.

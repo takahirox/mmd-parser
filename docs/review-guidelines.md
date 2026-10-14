@@ -7,6 +7,9 @@ than assuming a previous review or a checked box proves the current change works
 
 ## Review the implementation and evidence
 
+The central review question is: **Does this PR completely solve the Issue,
+without unnecessary scope or complexity?**
+
 1. Read the source Issue and PR description. Identify the problem, intended
    outcome, scope, pre-merge acceptance criteria, and any genuinely necessary
    post-merge verification. Do not invent routine human-only requirements.
@@ -27,14 +30,33 @@ than assuming a previous review or a checked box proves the current change works
    conflicts as actionable findings. Do not rely on mergeability for an older
    head or an outdated base. Before merge, recheck if the head or base changes.
 
+Check both directions against the source Issue:
+
+- **No missing work:** verify that every requirement the PR claims to resolve is
+  implemented, behavior matches the Issue's expected outcome, and appropriate
+  validation supports the result. Simplicity must not excuse omitted requirements,
+  error handling, or necessary regression coverage.
+- **No unnecessary work:** check for unnecessary abstractions, speculative
+  extensibility, unrelated refactoring, new frameworks or subsystems, and extra
+  policies or configuration without a demonstrated need. An otherwise relevant
+  parser fix can still be overengineered, for example by introducing a plugin
+  framework for a single format correction. Added complexity is not automatically
+  beneficial, especially in AI-generated changes.
+
+Prefer the smallest coherent change and design that fully satisfies the source
+Issue. Preserve appropriate existing architectural conventions; abstractions
+are appropriate when their complexity is necessary to solve the actual Issue.
+Require an explanation of that need when the justification is unclear.
+
 ## Classify findings and choose the outcome
 
 For each material finding, give its location, impact, and concrete resolution or
 verification. Distinguish these cases:
 
-- **Agent-fixable:** a code or documentation defect, scope error, merge conflict,
-  or missing applicable validation that an agent can address. Request focused
-  changes and recheck the affected behavior after the fix.
+- **Agent-fixable:** a code or documentation defect, concrete omission, unjustified
+  scope or complexity, merge conflict, or missing applicable validation that an
+  agent can address. Request focused fixes and review the updated PR again,
+  including affected behavior and validation.
 - **Necessary external input:** an unresolved requirement, inaccessible evidence,
   or essential human/device/external confirmation. State the exact question or
   evidence needed and why it affects pre-merge acceptance. Pause the dependent
@@ -45,9 +67,10 @@ verification. Distinguish these cases:
   or release check does not block pre-merge approval or require a completed PR
   metadata field or checkbox.
 
-Approve when the implementation satisfies the Issue and applicable pre-merge
-checks are sufficient. Request changes for material, agent-fixable blockers;
-explain any necessary external blocker without presenting it as a code defect.
+Approve when the implementation fully satisfies the Issue without unjustified
+scope or complexity and applicable pre-merge checks are sufficient. Request
+changes for material, agent-fixable blockers; explain any necessary external
+blocker without presenting it as a code defect.
 Optional improvements are suggestions, not new acceptance criteria. Report the
 reviewed head, evidence, findings, decision, and any required post-merge plan so
 the next workflow step can act on the result.
