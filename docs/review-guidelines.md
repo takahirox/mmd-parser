@@ -17,7 +17,8 @@ without unnecessary scope or complexity?**
    focused scope, regressions, compatibility, and unnecessary changes. For parser
    changes, inspect affected formats, decoding, coordinate conversion, public
    exports, and generated bundles as applicable. Check that documentation matches
-   actual file names and commands.
+   actual file names and commands. Review changes to user-facing commands,
+   messages, examples, or interfaces against the [UI/UX principles](../Readme.md#uiux).
 3. Evaluate applicable automated checks for that head and validation reported in
    the PR. Use the build/test commands and limitations in the development flow.
    Verify the evidence, including test output; distinguish passed, failed,
