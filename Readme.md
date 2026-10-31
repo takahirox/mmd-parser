@@ -7,6 +7,8 @@ mmd-parser parses MMD ArrayBuffer/Strings and generates Object.
 See the [development flow](docs/development-flow.md) for Issue authoring, build and
 test commands, and PR preparation, and the [review guidelines](docs/review-guidelines.md)
 for review, merge, and Issue closure guidance for contributors and AI agents.
+Use the [test and CI performance principles](docs/development-flow.md#test-and-ci-performance-principles)
+when choosing validation or adding coverage.
 See the [release procedure](docs/releases.md) for preparing a release, then running
 `npm publish` from a clean, updated `master` checkout. npm builds and validates the
 package automatically; authentication and post-publication Git tagging remain

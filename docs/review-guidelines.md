@@ -25,6 +25,10 @@ without unnecessary scope or complexity?**
    skipped, and unperformed checks. A documentation-only change needs template,
    Markdown, link, and consistency checks, not new runtime tests or parser builds.
    If a check cannot run, assess its impact and whether other evidence is enough.
+   Apply the [test and CI performance principles](development-flow.md#test-and-ci-performance-principles):
+   ask what additional defect new coverage detects, whether existing checks
+   duplicate that assurance, and what execution and maintenance cost it adds.
+   Preserve required regressions and meaningful integration coverage.
 4. Confirm the reviewed head merges cleanly into current `master` using current
    GitHub mergeability information or a local trial merge in a disposable
    worktree. Refresh unknown or stale mergeability before deciding. Report
