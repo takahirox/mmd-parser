@@ -29,8 +29,9 @@ routine human-only or post-merge checks to every Issue.
    upstream commit; for a manual contribution, start from current `master` on a
    working branch.
 2. Keep changes within the Issue. The public exports are in `index.ts`; parser
-   code is in `src/`, distributed bundles in `build/`, the existing test script in
-   `test/index.js`, and browser usage in `index.html` and `Readme.md`.
+   code is in `src/`, distributed bundles in `build/`, offline tests in
+   `test/offline.js`, optional sample checks in `test/index.js`, and browser usage
+   in `index.html` and `Readme.md`.
 3. For parser changes, consider affected PMD, PMX, VMD, and VPD behavior, character
    decoding, coordinate conversion, and public API compatibility as applicable.
    Add focused regression coverage when needed to demonstrate the fix.
@@ -47,7 +48,64 @@ or necessary regression coverage. Use the
 [review guidelines](review-guidelines.md#review-the-implementation-and-evidence)
 to check both missing work and unjustified scope or complexity.
 
+## Test and CI performance principles
+
+**Detect the required failures at the lightest appropriate layer, without
+redundant execution.** Preserve required correctness, regression assertions, and
+meaningful integration coverage when redistributing checks. This repository has
+npm build/test scripts but no checked-in CI workflow or browser/renderer test
+suite; the browser global smoke check runs in Node's VM. Apply these principles
+to local validation and future test/CI work:
+
+1. **Prefer the lightest meaningful layer.** Use small synthetic fixtures and
+   focused assertions for parser calculations, branches, decoding, and coordinate
+   conversion; use compile-only contracts for type behavior. Keep bundle and
+   installed-package checks for distribution boundaries. Use real-model or real
+   browser checks when the defect requires that environment. Add tests that catch
+   a concrete defect rather than merely mirror the implementation.
+2. **Choose combinations deliberately.** Cover distinct PMD/PMX/VMD/VPD paths,
+   PMX variants, coordinate states, bundle formats, and module-resolution modes
+   with representative cases. Exhaust combinations where interactions require
+   them, without automatically multiplying every model, material, format, and
+   environment. Preserve required regressions and meaningful boundary checks.
+3. **Match validation to the change.** Follow [Build and validate](#build-and-validate)
+   for mandatory pre-merge checks: Markdown/link/consistency checks for docs,
+   rebuilt artifacts, type checks, and offline regressions for core/runtime
+   changes, and package/lifecycle checks for releases. For browser-example/UI
+   changes, check affected loading and messages in the relevant environment;
+   future CI/build changes must validate affected scripts and artifacts. Use
+   focused checks for fast feedback and the applicable full regression sequence
+   before merge. Sample downloads remain optional. Publication and registry
+   verification follow the separate [release procedure](releases.md); record
+   genuinely post-merge-only work separately, with `None` when unnecessary.
+4. **Reuse work and avoid duplicate execution.** Reuse completed builds and
+   expensive fixtures/downloads only with keys that account for relevant inputs
+   and tools, and isolate mutable state and temporary consumers. Currently
+   `npm test` and `test:offline` run the same suite, so `npm run all` repeats it;
+   publication also deliberately rebuilds through `prepack`. Keep the documented
+   validation and lifecycle safeguards until separately scoped changes reconcile
+   duplication. In future CI, avoid equivalent push/PR runs for one revision,
+   cancel superseded work when safe, and preserve publication ordering. Measure
+   resource use before increasing parallel workers for independent work.
+5. **Review added confidence and cost together.** Identify the additional defect
+   a test detects, whether existing coverage already detects it, and the execution
+   and maintenance cost. Watch repeated compiler/browser setup, package installs,
+   large model downloads, and growing cross-products; keep necessary assertions.
+6. **Maintain an execution-time budget.** Normal validation/CI timing is currently
+   unmeasured; no baseline or target is documented. Establish a repository-specific
+   baseline and target from evidence during actual test/CI performance work, then
+   monitor growth and investigate overruns. Distinguish elapsed feedback time,
+   total runner/computation time, and queue time. Revisit structure and duplication
+   while retaining required coverage. This guidance adds no timing merge gate or
+   benchmarking requirement for documentation changes.
+
+> Does this change provide sufficient confidence with the lightest appropriate
+> validation, without redundant execution?
+
 ## Build and validate
+
+Choose checks using the [test and CI performance principles](#test-and-ci-performance-principles)
+and the change-specific requirements below.
 
 Install existing dependencies with `npm install`, as documented in
 [Readme.md](../Readme.md). Keep incidental installation artifacts out of the

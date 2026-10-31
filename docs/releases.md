@@ -64,11 +64,11 @@ also builds automatically through `prepack`, but does not run publish-only
 checks. See npm's [lifecycle order](https://docs.npmjs.com/cli/v11/using-npm/scripts/).
 Keep lifecycle scripts enabled for publication and its dry-run.
 
-The network-dependent `npm test` sample smoke script remains available separately
-(and through `npm run all`). It logs metadata without assertions and is not part
-of the deterministic publication gate; the offline and installed-package checks
-provide automated assertions without external sample downloads. No human-only
-verification is required before merge.
+The network-dependent `npm run test:samples` smoke script remains optional and
+separate from `npm run all`. It logs metadata without assertions and is not part
+of the deterministic publication gate. `npm test` and `npm run test:offline` run
+the same offline assertion suite; the offline and installed-package checks need
+no external sample downloads. No human-only verification is required before merge.
 
 The [1.1.1](release-1.1.1-validation.md) and
 [1.1.2](release-1.1.2-validation.md) evidence files are historical records of the
