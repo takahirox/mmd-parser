@@ -42,4 +42,6 @@ None.
 <!-- Replace None only if this change actually requires verification after merge.
 Describe what to check, when it becomes possible, and where to record the result.
 Do not add routine post-merge requirements or require the source Issue to stay
-open for these checks; follow the ProjectWeave lifecycle in the development flow. -->
+open for these checks. Follow ../../docs/development-flow.md#review-merge-and-issue-closure
+for evidence recording and new linked defect Issues after closure; do not reopen
+the original solely for post-merge follow-up. -->

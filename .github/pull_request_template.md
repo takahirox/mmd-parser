@@ -19,7 +19,9 @@ checks; they do not require new runtime tests. -->
 ## Related Issues
 
 <!-- Reference the source Issue and any related Issues.
-ProjectWeave publication adds Closes #N for the source Issue; preserve it.
+ProjectWeave publication adds Closes #N for a fully implemented source Issue with
+mandatory pre-merge checks satisfied; preserve it. For intentional partial work,
+state remaining scope and use Refs #N without automatically closing the parent.
 Its merge/close nodes close the source Issue. Pending post-merge verification
 does not justify removing Closes or requiring the Issue to remain open. -->
 
@@ -30,4 +32,7 @@ None.
 <!-- Replace None only for verification actually required by this change and
 possible only after merge. Record the plan and later results separately; pending
 results are not a pre-merge approval condition or a required completed checkbox.
+Follow ../docs/development-flow.md#review-merge-and-issue-closure for evidence
+recording and new linked defect Issues after closure; do not reopen the original
+solely for post-merge follow-up.
 See ../docs/review-guidelines.md for review and merge guidance. -->
