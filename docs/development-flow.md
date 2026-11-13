@@ -156,7 +156,9 @@ For documentation-only changes, check template front matter, Markdown syntax,
 relative links, command names, and consistency across the templates and guides.
 Run `git diff --check` for whitespace errors. New runtime tests and parser builds
 are not required when runtime files are unaffected. Record why those checks were
-not run. This repository has no lint script; do not invent a passed lint check.
+not run. Do not add routine manual approval, physical-device, heavyweight-model
+download, or deployment gates to documentation work. This repository has no lint
+script; do not invent a passed lint check.
 
 ## Prepare the PR
 
@@ -184,12 +186,31 @@ changes before merge. Merge only when authorized by the task or workflow and
 applicable repository requirements allow it.
 
 In the current ProjectWeave flow, the publication node adds `Closes #N` to the PR,
-and the merge/close nodes close the source Issue. Preserve that closing reference.
+and the merge/close nodes close the source Issue. Preserve that closing reference
+when implementation is complete and applicable mandatory pre-merge checks are
+satisfied.
 Do not remove it or require the source Issue to remain open until all post-merge
-checks are recorded: this conflicts with publication and can cause a
+checks are recorded, or withhold approval solely for pending post-merge-only
+verification: this conflicts with publication and can cause a
 `Review -> Fix -> Publish -> Review` loop.
 
-When post-merge verification is needed, record its outcome in the agreed location,
-such as the merged PR or a follow-up Issue; the source Issue can already be closed.
-If work requires a different Issue lifecycle, explicitly agree and update that
-workflow rather than introducing contradictory template or review requirements.
+Pending post-merge-only verification does not make a complete implementation
+partial. Missing implementation, mandatory pre-merge tests, required repository
+protections, and genuinely necessary pre-merge human acceptance remain blockers.
+Intentional partial work must describe its remaining scope and use a non-closing
+reference such as `Refs #N` for the parent Issue instead of automatically closing it.
+
+After successful merge, close the original Issue, then perform genuinely required
+post-merge checks. Record accurate evidence in the merged PR, closed Issue, or a
+linked validation report. Distinguish passed, failed, pending, unperformed, and
+environment-blocked checks; Issue closure does not claim these checks passed.
+An unavailable test environment alone is not evidence of a product defect.
+
+If verification finds an actual defect, check for an existing equivalent Issue
+first. Use that Issue or create a new linked Issue with reproduction steps, the
+affected revision, expected and actual behavior, and links to the original Issue
+and PR. Do not reopen the original Issue solely for post-merge follow-up.
+
+This lifecycle supersedes older instructions to keep an implemented Issue open
+solely for post-merge verification. Preserve historical test outcomes and evidence
+without rewriting those results.

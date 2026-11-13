@@ -88,12 +88,17 @@ If the head changes, review the new diff and affected checks before merging. Do
 not merge based on stale approval or bypass repository requirements.
 
 ProjectWeave publication adds `Closes #N`; its merge/close nodes close the source
-Issue. Preserve this metadata. Do not request removal of `Closes #N`, require the
-Issue to stay open, or withhold approval solely because necessary post-merge
+Issue. Preserve this metadata for a complete implementation with applicable
+mandatory pre-merge checks satisfied. Do not request removal of `Closes #N`,
+require the Issue to stay open, or withhold approval solely because necessary post-merge
 verification is pending. Such requirements conflict with the existing flow and
-can create a `Review -> Fix -> Publish -> Review` loop. A different lifecycle
-requires an explicit workflow change, not an incidental review policy.
+can create a `Review -> Fix -> Publish -> Review` loop. Pending post-merge-only
+verification does not make the implementation partial; actual missing work or
+mandatory pre-merge acceptance remains blocking. Intentional partial work must
+state remaining scope and must not automatically close its parent Issue.
 
-Record required post-merge outcomes in the agreed location, even if the source
-Issue is closed. Record failures accurately and create follow-up work when
-needed. When no post-merge verification is required, state `None`.
+Follow the [Issue closure lifecycle](development-flow.md#review-merge-and-issue-closure):
+close the original Issue after successful merge, then record required post-merge
+evidence honestly and use new or existing linked Issues for discovered defects,
+without reopening the original solely for follow-up. When no post-merge
+verification is required, state `None`.
